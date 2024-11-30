@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Bridge Protocol Prototype Ethereum</title>
+        <link rel="stylesheet" type="text/css" href="styles.css" />
+        <script type="module" src="./src/main.ts"></script>
+    </head>
+    <body>
+        <header>
+            <div class="container">
+                <div class="logo">
+                    <img src="images/bridgelogo.png" alt="Bridge Logo" />
+                    <h2>Bridge Protocol Prototype</h2>
+                </div>
+                <div class="logo blockchain">
+                    <img src="images/ethereumlogo.png" alt="Ethereum Logo" />
+                </div>
+                <div class="button wallet-connect">
+                    <button id="connect-button">
+                        <img src="images/mm.png" alt="Metamask Logo" />
+                        Connect Metamask Wallet
+                    </button>
+                </div>
+            </div>
+        </header>
+        <main>
+            <div id="text-info" class="hero">
+                <h2>Prototype for the information transfer bridge protocol</h2>
+                <p>Initiate the protocol by pressing connect metamask wallet button.</p>
+            </div>
+            <div id="destination-input" class="input-container">
+                <input
+                    id="destination-input-field"
+                    type="text"
+                    placeholder="Enter the destination address"
+                />
+            </div>
+            <div id="operation-input" class="input-container">
+                <input
+                    id="operation-input-field"
+                    type="text"
+                    placeholder="Enter the operation or the type of message you want to make."
+                />
+            </div>
+            <div id="message-input" class="input-container">
+                <input
+                    id="message-input-field"
+                    type="text"
+                    placeholder="Enter a message you'd like to embed."
+                />
+            </div>
+            <div id="loading-window" class="loading-window-container">
+                <div class="loading-window-content">
+                    <div class="spinner"></div>
+                    <p>Your request is being processed, please wait...</p>
+                </div>
+            </div>
+        </main>
+    </body>
+</html>

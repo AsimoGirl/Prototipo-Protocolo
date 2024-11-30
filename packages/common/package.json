@@ -1,0 +1,10 @@
+{
+    "name": "@thesis/common",
+    "type": "module",
+    "types": "./types/index.d.ts",
+    "devDependencies": {
+        "@types/dotenv-parse-variables": "^2.0.3",
+        "dotenv-extended": "^2.9.0",
+        "dotenv-parse-variables": "^2.0.0"
+    }
+}

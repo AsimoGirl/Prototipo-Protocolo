@@ -1,0 +1,9 @@
+{
+    "address": "DWx8BzghjiypNmRDyeeCZGo66RKrJiXBZf6BXZLpd7Dn",
+    "metadata": {
+        "version": "0.1.0",
+        "spec": "0.1.0",
+        "name": "hello_world"
+    },
+    "instructions": [{ "name": "hello", "accounts": [], "args": [] }]
+}

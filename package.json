@@ -1,0 +1,65 @@
+{
+    "name": "thesis",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "packageManager": "yarn@4.5.3",
+    "author": "Sandy Del Mar",
+    "description": "",
+    "scripts": {
+        "packages": "FORCE_COLOR=true yarn workspaces foreach -Avpi -j 4 --no-private run",
+        "build": "yarn packages build",
+        "dev": "yarn packages dev",
+        "vite": "yarn packages vite",
+        "start": "yarn packages start",
+        "lint:script": "eslint --cache packages/**/*.ts",
+        "lint:fix": "yarn lint:script --fix",
+        "lint": "yarn lint:script && yarn lint:style",
+        "vite-all": "yarn workspace web-solana run vite --port 5903 & yarn workspace @thesis/web-ethereum run vite --port 5900"
+    },
+    "lint-staged": {
+        "*.ts": "eslint --cache --fix"
+    },
+    "dependencies": {
+        "@vitejs/plugin-react": "^4.3.1",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "tslib": "^2.6.3",
+        "tsx": "^4.16.2",
+        "utf8": "^3.0.0"
+    },
+    "workspaces": [
+        "packages/*"
+    ],
+    "devDependencies": {
+        "@commitlint/cli": "^19.3.0",
+        "@commitlint/config-conventional": "^19.2.2",
+        "@eslint/js": "^9.5.0",
+        "@types/eslint__js": "^8.42.3",
+        "@types/node": "^20.14.5",
+        "@types/react": "^18.3.5",
+        "@types/react-dom": "^18.3.0",
+        "@types/utf8": "^3",
+        "@typescript-eslint/eslint-plugin": "^7.13.1",
+        "@typescript-eslint/parser": "^7.13.1",
+        "autoprefixer": "^10.4.19",
+        "concurrently": "^9.0.1",
+        "eslint": "^9.5.0",
+        "eslint-config-prettier": "^9.1.0",
+        "eslint-plugin-import-order-aesthetic": "^1.0.7",
+        "eslint-plugin-import-x": "^0.5.1",
+        "eslint-plugin-jsx-a11y": "^6.8.0",
+        "eslint-plugin-prefer-let": "^3.0.1",
+        "eslint-plugin-prettier": "^5.1.3",
+        "eslint-plugin-unicorn": "^54.0.0",
+        "husky": "^9.0.11",
+        "lint-staged": "^15.2.7",
+        "prettier": "^3.3.2",
+        "stylelint": "^16.6.1",
+        "typescript": "^5.4.5",
+        "typescript-eslint": "^7.13.1"
+    },
+    "engines": {
+        "node": "^16.10.0 || ^18.0.0 || ^19.0.0"
+    }
+}

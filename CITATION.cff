@@ -1,0 +1,21 @@
+
+cff-version: 1.2.0
+title: >-
+  Prototipo Protocolo Intercambio de Información entre
+  Blockchains.
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Sandra Del Mar
+    family-names: Soto Corderi
+repository-code: 'https://github.com/AsimoGirl/Prototipo-Protocolo'
+abstract: >-
+  Este repositorio contiene el código del prototipo
+  desarrollado para verificar la factibilidad del protocolo
+  propuesto en la tesis de maestría "Especificación Formal
+  De Un Protocolo Criptográfico De Intercambio De
+  Información Entre Blockchains"
+license: MIT
+date-released: '2024-11-30'
