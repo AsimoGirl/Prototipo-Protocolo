@@ -1,0 +1,52 @@
+/* App.css */
+
+/* Box sizing for consistent padding and border handling */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* Global reset for margin and padding */
+body,
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+li,
+figure,
+figcaption,
+blockquote,
+dl,
+dd {
+    margin: 0;
+    padding: 0;
+}
+
+/* Basic body styles */
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    line-height: 1.6;
+    background-color: #0b0d17; /* Dark background to match styles.css */
+    color: white;
+}
+
+/* Default link styles */
+a {
+    color: inherit; /* Inherit text color */
+    text-decoration: none; /* Remove underline */
+}
+
+/* Utility class for centering content if needed */
+.centered {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Utility class for hidden elements */
+.hidden {
+    display: none;
+}

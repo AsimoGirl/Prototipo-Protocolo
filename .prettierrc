@@ -1,0 +1,10 @@
+{
+    "printWidth": 100,
+    "useTabs": false,
+    "tabWidth": 4,
+    "singleQuote": true,
+    "trailingComma": "none",
+    "endOfLine": "auto",
+    "plugins": [],
+    "overrides": [{ "files": "*.json", "options": { "printWidth": 120 } }]
+}

@@ -1,0 +1,6 @@
+.yarn/
+
+*.md
+
+dist/
+data/**/*.json

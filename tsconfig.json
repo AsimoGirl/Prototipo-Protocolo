@@ -1,0 +1,56 @@
+{
+    "compilerOptions": {
+        "incremental": true,
+        // "composite": true,
+        "tsBuildInfoFile": "./.tsbuildinfo",
+
+        "target": "esnext",
+        "moduleDetection": "force",
+
+        "module": "esnext",
+        "rootDir": "./",
+        "moduleResolution": "node",
+        "baseUrl": "./packages",
+        "paths": { "@thesis/*": ["*"] },
+        "types": ["@types/node", "@thesis/common"],
+        "allowImportingTsExtensions": true,
+        // "resolvePackageJsonExports": true,
+        // "resolvePackageJsonImports": true,
+        "resolveJsonModule": true,
+        "allowArbitraryExtensions": true,
+
+        "allowJs": false,
+        "checkJs": false,
+        // "maxNodeModuleJsDepth": 1,
+
+        "disableSizeLimit": false,
+
+        "noEmit": true,
+
+        "isolatedModules": true,
+        "verbatimModuleSyntax": true,
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "preserveSymlinks": true,
+        "forceConsistentCasingInFileNames": true,
+
+        "strict": true,
+        "noImplicitAny": true,
+        "strictNullChecks": true,
+        // "exactOptionalPropertyTypes": true,
+        // "noImplicitReturns": true,
+        // "noFallthroughCasesInSwitch": true,
+        // "noUncheckedIndexedAccess": true,
+        "noImplicitOverride": true,
+        // "noPropertyAccessFromIndexSignature": true,
+        "allowUnusedLabels": false,
+        "allowUnreachableCode": false,
+
+        "skipLibCheck": true,
+        "plugins": [
+            {
+                "name": "typescript-strict-plugin"
+            }
+        ]
+    }
+}
