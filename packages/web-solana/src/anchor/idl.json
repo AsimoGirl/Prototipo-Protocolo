@@ -1,9 +1,17 @@
 {
-    "address": "DWx8BzghjiypNmRDyeeCZGo66RKrJiXBZf6BXZLpd7Dn",
+    "address": "CLdiWXGQQeq3k2eZPfhwgDCtAUFjFo33Uu2usJPn7hMx",
     "metadata": {
+        "name": "hello_world",
         "version": "0.1.0",
         "spec": "0.1.0",
-        "name": "hello_world"
+        "description": "Created with Anchor"
     },
-    "instructions": [{ "name": "hello", "accounts": [], "args": [] }]
+    "instructions": [
+        {
+            "name": "initialize",
+            "discriminator": [175, 175, 109, 31, 13, 152, 155, 237],
+            "accounts": [],
+            "args": []
+        }
+    ]
 }

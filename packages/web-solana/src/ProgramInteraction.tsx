@@ -1,54 +1,78 @@
-import { Connection, Commitment } from '@solana/web3.js';
-import { Idl, Program, AnchorProvider } from '@coral-xyz/anchor';
+import { useMemo } from 'react';
+import { Connection } from '@solana/web3.js';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
-//import config from '@thesis/common/config';
-
+import * as anchor from '@coral-xyz/anchor';
 import idl from './anchor/idl.json';
 
-// Define network and program ID
+// Make sure this matches how your IDL defines the program address
+// const programID = new PublicKey(idl.address);
 const network = 'https://api.devnet.solana.com';
-const opts: { preflightCommitment: Commitment } = { preflightCommitment: 'processed' };
-//const programID = new PublicKey(idl.address); // Get program ID from IDL
+const opts = anchor.AnchorProvider.defaultOptions();
 
 function ProgramInteraction() {
-    //const programID = new PublicKey(config.smartContractBSolanaAddress); // Get program ID from config
-    const wallet = useWallet(); // Access the wallet
-    const { publicKey, signTransaction, signAllTransactions, connected } = wallet;
+    const wallet = useWallet();
+    const idlString = JSON.stringify(idl);
+    const parsedIdl = JSON.parse(idlString);
+    const connection = useMemo(() => new Connection(network, 'confirmed'), []);
 
-    // Ensure the wallet is connected before proceeding
-    if (!connected || !publicKey || !signTransaction || !signAllTransactions) {
-        return <div>Please connect your wallet.</div>;
-    }
+    const provider = useMemo(() => {
+        if (!wallet) return null;
+        return new anchor.AnchorProvider(
+            connection,
+            {
+                publicKey: wallet.publicKey!,
+                signTransaction: wallet.signTransaction!,
+                signAllTransactions: wallet.signAllTransactions!
+            },
+            opts
+        );
+    }, [connection, wallet]);
 
-    // Set up Solana connection and Anchor provider
-    const connection = new Connection(network, opts.preflightCommitment);
-    if (!signTransaction || !signAllTransactions) {
-        return <div>Please connect your wallet.</div>;
-    }
-    const provider = new AnchorProvider(
-        connection,
-        { publicKey, signTransaction, signAllTransactions },
-        opts
-    ); // Wallet adapter passed directly
-    const program = new Program(idl as unknown as Idl, provider); // Initialize the program
-
-    // Function to call the "hello" instruction
     const sayHello = async () => {
+        const program = new anchor.Program(parsedIdl, provider!);
+
+        //const program = anchor.workspace.HelloWorld as anchor.Program<HelloWorld>;
+
+        if (!program || !wallet.publicKey) {
+            alert('Program or wallet not ready');
+            return;
+        }
+
         try {
-            const tx = await program.methods.hello().rpc(); // Call the instruction
-            console.log('Transaction signature:', tx);
-            alert(`Transaction successful! Signature: ${tx}`);
+            console.log('Calling the "hello" instruction via Anchor RPC');
+
+            // Check your IDL for required accounts. Adjust as needed.
+            const txSignature = await program.methods.initialize().rpc();
+
+            console.log('Transaction signature:', txSignature);
+
+            const latestBlockhash = await connection.getLatestBlockhash('confirmed');
+            await connection.confirmTransaction(
+                {
+                    signature: txSignature,
+                    blockhash: latestBlockhash.blockhash,
+                    lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
+                },
+                'confirmed'
+            );
+
+            alert('Transaction completed successfully!');
         } catch (err) {
             console.error('Transaction failed:', err);
-            alert(`Transaction failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+            alert(`Transaction failed: ${errorMessage}`);
         }
     };
 
     return (
         <div>
             <WalletMultiButton />
-            <button onClick={sayHello}>Say Hello</button>
+            {wallet.publicKey ? (
+                <button onClick={sayHello}>Say Hello</button>
+            ) : (
+                <p>Please connect your wallet to interact with the program.</p>
+            )}
         </div>
     );
 }
