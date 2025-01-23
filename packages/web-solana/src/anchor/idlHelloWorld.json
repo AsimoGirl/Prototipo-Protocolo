@@ -1,0 +1,41 @@
+{
+    "address": "A2iFxu78tuUbdnVFyhmmeYBHGgCZKF1kDY9eTEZSyN2A",
+    "metadata": {
+        "name": "hello_world",
+        "version": "0.1.0",
+        "spec": "0.1.0",
+        "description": "Created with Anchor"
+    },
+    "instructions": [
+        {
+            "name": "say_hello",
+            "discriminator": [250, 163, 169, 119, 25, 42, 108, 31],
+            "accounts": [],
+            "args": []
+        }
+    ],
+    "events": [
+        {
+            "name": "HelloEvent",
+            "discriminator": [27, 18, 97, 177, 146, 50, 130, 9]
+        }
+    ],
+    "types": [
+        {
+            "name": "HelloEvent",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "data",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "message",
+                        "type": "string"
+                    }
+                ]
+            }
+        }
+    ]
+}

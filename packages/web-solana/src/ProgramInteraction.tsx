@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { Connection, PublicKey, Keypair, SystemProgram } from '@solana/web3.js';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import * as anchor from '@coral-xyz/anchor';
@@ -14,8 +14,12 @@ function ProgramInteraction() {
     const wallet = useWallet();
     const idlString = JSON.stringify(idl);
     const parsedIdl = JSON.parse(idlString);
+    const programStateKeypair = Keypair.generate();
+    //const programStateKey2 = programStateKeypair.publicKey;
+    const programStateKey = new PublicKey('EdbiCwD55i6aeoWhzpu8YCwNoEW6rAgARJyUU511K6jG');
     const connection = useMemo(() => new Connection(network, 'confirmed'), []);
 
+    // Create the provider with Phantom wallet
     const provider = useMemo(() => {
         if (!wallet) return null;
         return new anchor.AnchorProvider(
@@ -29,29 +33,19 @@ function ProgramInteraction() {
         );
     }, [connection, wallet]);
 
-    const sayHello = async () => {
-        const program = new anchor.Program(parsedIdl, provider!);
-
-        if (!program || !wallet.publicKey) {
-            alert('Program or wallet not ready');
-            return;
+    // Initialize the Anchor program
+    const getProgram = () => {
+        if (!provider) {
+            alert('Provider not ready. Please connect your wallet.');
+            throw new Error('Provider not ready');
         }
+        return new anchor.Program(parsedIdl, provider!);
+    };
 
+    // Common transaction handler
+    const handleTransaction = async (transactionFn: () => Promise<string>) => {
         try {
-            /* Code for adding listener (Not as useful)
-
-            const listener = program.addEventListener('HelloEvent', (event, slot, signature) => {
-                console.log(`\n[Event Listener] Slot: ${slot}`);
-                console.log('Event data:', event);
-                console.log('Signature:', signature);
-                console.log('Got here');
-                listenerFinished = true;
-            });
-
-            console.log('listener:', listener); */
-
-            const txSignature = await program.methods.sayHello().rpc();
-
+            const txSignature = await transactionFn();
             console.log('Transaction signature:', txSignature);
 
             const txInfo = await connection.getTransaction(txSignature, {
@@ -60,35 +54,16 @@ function ProgramInteraction() {
             });
 
             if (txInfo && txInfo.meta) {
-                /* Code to filter logs (may be useful if the event is too big) 
-                // Filter and strip only "Program log: " lines
-                const prefix = 'Program log: ';
-                const excludeMarker = 'Instruction:';
-
-                const programLogs = (txInfo.meta.logMessages || [])
-                    // Keep only lines that start with "Program log: "
-                    .filter((logLine) => logLine.startsWith(prefix))
-                    // Exclude lines that contain "Instruction:"
-                    .filter((logLine) => !logLine.includes(excludeMarker))
-                    // Strip the "Program log: " prefix so you only get the actual message
-                    .map((logLine) => logLine.slice(prefix.length));
-
-                console.log('Filtered program logs:', programLogs); */
-
                 const logs = txInfo.meta.logMessages;
-                if (!logs) {
-                    console.log('No logs in this transaction');
-                    return;
-                }
-
-                const coder = new anchor.BorshCoder(parsedIdl);
-                const eventParser = new anchor.EventParser(programID, coder);
-                const anchorEvents = eventParser.parseLogs(logs);
-                for (const event of anchorEvents) {
-                    console.log(`Parsed event: ${event.name}`, event.data);
+                if (logs) {
+                    const coder = new anchor.BorshCoder(JSON.parse(JSON.stringify(idl)));
+                    const eventParser = new anchor.EventParser(programID, coder);
+                    const events = eventParser.parseLogs(logs);
+                    for (const event of events) {
+                        console.log(`Parsed event: ${event.name}`, event.data);
+                    }
                 }
             }
-
             const latestBlockhash = await connection.getLatestBlockhash('confirmed');
             await connection.confirmTransaction(
                 {
@@ -109,16 +84,66 @@ function ProgramInteraction() {
             );
         } catch (err) {
             console.error('Transaction failed:', err);
-            const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-            alert(`Transaction failed: ${errorMessage}`);
+            alert(`Transaction failed: ${err instanceof Error ? err.message : err}`);
         }
+    };
+
+    // Initialize Program State
+    const initializeProgram = async () => {
+        const program = getProgram();
+        await handleTransaction(async () =>
+            program.methods
+                .initializeProgramState()
+                .accounts({
+                    programState: programStateKeypair.publicKey,
+                    payer: provider!.wallet.publicKey,
+                    systemProgram: SystemProgram.programId
+                })
+                .signers([programStateKeypair])
+                .rpc()
+        );
+    };
+
+    // Start Protocol
+    const startProtocol = async () => {
+        const program = getProgram();
+        const messageRequest = 'messageStart';
+        await handleTransaction(async () =>
+            program.methods
+                .startProtocol(messageRequest)
+                .accounts({
+                    programState: programStateKey,
+                    signer: wallet.publicKey!
+                })
+                .rpc()
+        );
+    };
+
+    // Get Transfer Info
+    const getTransferInfo = async () => {
+        const program = getProgram();
+        const messageRequest = 'messageGetInfo';
+        const transactionMessage = 'signedMessage';
+        await handleTransaction(async () =>
+            program.methods
+                .getTransferInfo(messageRequest, transactionMessage)
+                .accounts({
+                    programState: programStateKey,
+                    signer: wallet.publicKey!
+                })
+                .rpc()
+        );
     };
 
     return (
         <div>
             <WalletMultiButton />
             {wallet.publicKey ? (
-                <button onClick={sayHello}>Say Hello</button>
+                <div>
+                    <button onClick={initializeProgram}>Initialize Program</button>
+                    <button onClick={startProtocol}>Start Protocol</button>
+                    <button onClick={getTransferInfo}>Get Transfer Info</button>
+                </div>
             ) : (
                 <p>Please connect your wallet to interact with the program.</p>
             )}
