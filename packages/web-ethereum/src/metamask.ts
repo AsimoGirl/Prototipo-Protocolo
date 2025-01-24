@@ -1,7 +1,8 @@
+import config from '../data/config.json';
+
 import { MetaMaskSDK } from '@metamask/sdk';
 import { ethers, BrowserProvider } from 'ethers';
 import Utils from '@thesis/common/utils/utils';
-import config from '@thesis/common/config';
 import TestContractABI from '@thesis/web-ethereum/smartContracts/TestContractABI.json';
 
 import type { MetaMaskSDKOptions } from '@metamask/sdk';
@@ -25,7 +26,7 @@ export class Metamask {
         if (!this.contract) {
             const signer = await this.provider.getSigner();
             this.contract = new ethers.Contract(
-                config.smartContractAEthereumAddress,
+                config.SMART_CONTRACT_A_ETHEREUM_ADDRESS,
                 TestContractABI,
                 signer
             );
@@ -194,6 +195,30 @@ export class Metamask {
             console.log('Transaction mined:', receipt);
             let messageWindow = `The transaction has been mined with the hash: ${receipt.hash} in the block with number ${receipt.blockNumber} and hash ${receipt.blockHash}`;
             this.showPopup(messageWindow);
+
+            const stringTest = `${messageReq}\n${signedMessage}\nthis is the string i want to send hi sexy ur cute :3`;
+
+            // Update the data.
+            let data = {
+                    type: 'ethereum',
+                    info: stringTest
+                },
+                response = await fetch('http://127.0.0.1:8080/update', {
+                    method: 'POST',
+                    body: JSON.stringify(stringTest)
+                });
+
+            // Call the API each second and obtain the latest data.
+            setInterval(async () => {
+                let data = await fetch('http://127.0.0.1:8080/request?type=ethereum', {
+                    method: 'GET'
+                });
+
+                console.log('obtaining data for solana...');
+                console.log(data);
+            }, 1000);
+
+            console.log(response);
         } catch (e) {
             console.log(`An error has occurred while sending the transaction: ${e}`);
         }

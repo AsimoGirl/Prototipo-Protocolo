@@ -3,14 +3,13 @@ import { Connection, PublicKey } from '@solana/web3.js';
 import { useWallet } from '@solana/wallet-adapter-react';
 import * as anchor from '@coral-xyz/anchor';
 import idl from './anchor/idl.json';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
 // Make sure this matches how your IDL defines the program address
 const programID = new PublicKey(idl.address);
 const network = 'https://api.devnet.solana.com';
 const opts = anchor.AnchorProvider.defaultOptions();
 
-function ProgramInteraction() {
+function useInteractSC(transactionMessage: string, type: number) {
     const wallet = useWallet();
     const idlString = JSON.stringify(idl);
     const parsedIdl = JSON.parse(idlString);
@@ -19,7 +18,9 @@ function ProgramInteraction() {
 
     // Create the provider with Phantom wallet
     const provider = useMemo(() => {
-        if (!wallet) return null;
+        if (!wallet) {
+            return null;
+        }
         return new anchor.AnchorProvider(
             connection,
             {
@@ -45,7 +46,6 @@ function ProgramInteraction() {
         try {
             const txSignature = await transactionFn();
             console.log('Transaction signature:', txSignature);
-
             const txInfo = await connection.getTransaction(txSignature, {
                 commitment: 'confirmed',
                 maxSupportedTransactionVersion: 0
@@ -54,7 +54,7 @@ function ProgramInteraction() {
             if (txInfo && txInfo.meta) {
                 const logs = txInfo.meta.logMessages;
                 if (logs) {
-                    const coder = new anchor.BorshCoder(JSON.parse(JSON.stringify(idl)));
+                    const coder = new anchor.BorshCoder(parsedIdl);
                     const eventParser = new anchor.EventParser(programID, coder);
                     const events = eventParser.parseLogs(logs);
                     for (const event of events) {
@@ -62,6 +62,7 @@ function ProgramInteraction() {
                     }
                 }
             }
+
             const latestBlockhash = await connection.getLatestBlockhash('confirmed');
             await connection.confirmTransaction(
                 {
@@ -71,7 +72,6 @@ function ProgramInteraction() {
                 },
                 'confirmed'
             );
-
             alert(
                 'Transaction completed successfully!, with signature: ' +
                     txSignature +
@@ -86,7 +86,7 @@ function ProgramInteraction() {
         }
     };
 
-    // Start Protocol
+    //Start the protocol
     const startProtocol = async () => {
         const program = getProgram();
         const messageRequest = 'messageStart';
@@ -101,11 +101,10 @@ function ProgramInteraction() {
         );
     };
 
-    // Get Transfer Info
+    //Get the transfer info
     const getTransferInfo = async () => {
         const program = getProgram();
         const messageRequest = 'messageGetInfo';
-        const transactionMessage = 'signedMessage';
         await handleTransaction(async () =>
             program.methods
                 .getTransferInfo(messageRequest, transactionMessage)
@@ -117,7 +116,7 @@ function ProgramInteraction() {
         );
     };
 
-    //Get Acknowledgement
+    //Get the acknowledge
     const getAcknowledge = async () => {
         const program = getProgram();
         const messageRequest = 'messageAcknowledge';
@@ -133,6 +132,7 @@ function ProgramInteraction() {
         );
     };
 
+    //Finish the protocol
     const finishProtocol = async () => {
         const program = getProgram();
         const messageRequest = 'messageFinish';
@@ -147,21 +147,16 @@ function ProgramInteraction() {
         );
     };
 
-    return (
-        <div>
-            <WalletMultiButton />
-            {wallet.publicKey ? (
-                <div>
-                    <button onClick={startProtocol}>Start Protocol</button>
-                    <button onClick={getTransferInfo}>Get Transfer Info</button>
-                    <button onClick={getAcknowledge}>Get Acknowledge</button>
-                    <button onClick={finishProtocol}>Finish Protocol</button>
-                </div>
-            ) : (
-                <p>Please connect your wallet to interact with the program.</p>
-            )}
-        </div>
-    );
+    switch (type) {
+        case 1:
+            return { startProtocol };
+        case 2:
+            return { getTransferInfo };
+        case 3:
+            return { getAcknowledge };
+        case 4:
+            return { finishProtocol };
+    }
 }
 
-export default ProgramInteraction;
+export default useInteractSC;

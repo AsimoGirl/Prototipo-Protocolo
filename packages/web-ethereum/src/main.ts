@@ -1,7 +1,8 @@
 import { Metamask } from './metamask';
 import { EventCatcher } from './eventCatcher';
+import utils from './utils';
 
-import config from '@thesis/common/config';
+import config from '../data/config.json';
 
 export default class Main {
     //Connect to metamask
@@ -10,7 +11,7 @@ export default class Main {
             name: 'Bridge Dapp'
         },
         preferDesktop: true,
-        infuraAPIKey: config.infuraApiKey
+        infuraAPIKey: config.INFURA_API_KEY
     });
 
     public eventCatcher: EventCatcher = new EventCatcher();
@@ -70,17 +71,29 @@ export default class Main {
             this.showInput();
             this.messageInputField.focus();
         });
+
+        utils.updateData('String I want to save - from ethereum');
+
+        this.testEthereumData();
+    }
+
+    private async testEthereumData() {
+        // Obtain the response from the bridge with the ethereum data.
+        let data = await utils.getData();
+
+        // The string from the bridge.
+        console.log('Received the following data for Solana from the bridge: ');
+        console.log(data);
     }
 
     //Connects to the metamask wallet
     private async connect() {
         if (this.metamask.mainAccount) {
             this.eventCatcher.listenForAnyEvent();
+            //Makes all the functionality when you create the message and call getTransferInfo
             this.signFirstMessage();
-            //let signedMessage = this.operationInputField.value,
-            //    messageReq = this.messageInputField.value;
-            //this.metamask.getValuesSignatures(signedMessage, messageReq);
             console.log(`Connected to ${this.metamask.mainAccount}`);
+            //It would follow
         } else this.metamask.connect();
     }
 

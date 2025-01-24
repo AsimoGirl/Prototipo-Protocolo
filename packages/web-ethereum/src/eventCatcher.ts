@@ -1,4 +1,5 @@
-import config from '@thesis/common/config';
+import config from '../data/config.json';
+
 import Utils from '@thesis/common/utils/utils';
 import TestContractABI from '@thesis/web-ethereum/smartContracts/TestContractABI.json';
 import { ethers } from 'ethers';
@@ -7,13 +8,13 @@ export class EventCatcher {
     //Create a provider
     public provider = ethers.getDefaultProvider('sepolia', {
         //etherscan: ETHER_SCAN_API_KEY,
-        infura: config.infuraApiKey,
-        alchemy: config.alchemyApiKey,
-        chainstack: config.chainstackApiKey,
+        infura: config.INFURA_API_KEY,
+        alchemy: config.ALCHEMY_API_KEY,
+        chainstack: config.CHAINSTACK_API_KEY,
         exclusive: ['infura', 'alchemy', 'chainstack']
     });
 
-    public contractAddress = config.smartContractAEthereumAddress;
+    public contractAddress = config.SMART_CONTRACT_A_ETHEREUM_ADDRESS;
 
     //Duration in milliseconds (90 seconds) of the time to look for events
     public duration = 90000;

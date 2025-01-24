@@ -1,3 +1,5 @@
+//import { appendFile } from 'fs';
+
 import utf8 from 'utf8';
 
 export default {
