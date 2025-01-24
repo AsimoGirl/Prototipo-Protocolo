@@ -3,19 +3,20 @@ import { Connection, PublicKey, Keypair, SystemProgram } from '@solana/web3.js';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import * as anchor from '@coral-xyz/anchor';
-import idl from './anchor/idl.json';
-import config from '@thesis/common/config';
+import idl from './idl.json';
 
-// Make sure this matches how your IDL defines the program address
 const programID = new PublicKey(idl.address);
 const network = 'https://api.devnet.solana.com';
 const opts = anchor.AnchorProvider.defaultOptions();
 
-function ProgramInteraction() {
+//Run this function to initialize the program state and then put the value on the env variables
+function InitializeSmartContract() {
     const wallet = useWallet();
     const idlString = JSON.stringify(idl);
     const parsedIdl = JSON.parse(idlString);
-    const programStateKey = new PublicKey(config.smartContractBSolanaStateAddress);
+    const programStateKeypair = Keypair.generate();
+    const programStateKey = programStateKeypair.publicKey;
+    console.log('Program State Key:', programStateKey);
     const connection = useMemo(() => new Connection(network, 'confirmed'), []);
 
     // Create the provider with Phantom wallet
@@ -45,6 +46,7 @@ function ProgramInteraction() {
     const handleTransaction = async (transactionFn: () => Promise<string>) => {
         try {
             const txSignature = await transactionFn();
+
             console.log('Transaction signature:', txSignature);
 
             const txInfo = await connection.getTransaction(txSignature, {
@@ -87,63 +89,18 @@ function ProgramInteraction() {
         }
     };
 
-    // Start Protocol
-    const startProtocol = async () => {
+    // Initialize Program State
+    const initializeProgram = async () => {
         const program = getProgram();
-        const messageRequest = 'messageStart';
         await handleTransaction(async () =>
             program.methods
-                .startProtocol(messageRequest)
+                .initializeProgramState()
                 .accounts({
-                    programState: programStateKey,
-                    signer: wallet.publicKey!
+                    programState: programStateKeypair.publicKey,
+                    payer: provider!.wallet.publicKey,
+                    systemProgram: SystemProgram.programId
                 })
-                .rpc()
-        );
-    };
-
-    // Get Transfer Info
-    const getTransferInfo = async () => {
-        const program = getProgram();
-        const messageRequest = 'messageGetInfo';
-        const transactionMessage = 'signedMessage';
-        await handleTransaction(async () =>
-            program.methods
-                .getTransferInfo(messageRequest, transactionMessage)
-                .accounts({
-                    programState: programStateKey,
-                    signer: wallet.publicKey!
-                })
-                .rpc()
-        );
-    };
-
-    //Get Acknowledgement
-    const getAcknowledge = async () => {
-        const program = getProgram();
-        const messageRequest = 'messageAcknowledge';
-        const transactionMessage = 'signedMessage';
-        await handleTransaction(async () =>
-            program.methods
-                .getAcknowledge(messageRequest, transactionMessage)
-                .accounts({
-                    programState: programStateKey,
-                    signer: wallet.publicKey!
-                })
-                .rpc()
-        );
-    };
-
-    const finishProtocol = async () => {
-        const program = getProgram();
-        const messageRequest = 'messageFinish';
-        await handleTransaction(async () =>
-            program.methods
-                .finishProtocol(messageRequest)
-                .accounts({
-                    programState: programStateKey,
-                    signer: wallet.publicKey!
-                })
+                .signers([programStateKeypair])
                 .rpc()
         );
     };
@@ -153,10 +110,7 @@ function ProgramInteraction() {
             <WalletMultiButton />
             {wallet.publicKey ? (
                 <div>
-                    <button onClick={startProtocol}>Start Protocol</button>
-                    <button onClick={getTransferInfo}>Get Transfer Info</button>
-                    <button onClick={getAcknowledge}>Get Acknowledge</button>
-                    <button onClick={finishProtocol}>Finish Protocol</button>
+                    <button onClick={initializeProgram}>Initialize Program</button>
                 </div>
             ) : (
                 <p>Please connect your wallet to interact with the program.</p>
@@ -165,4 +119,4 @@ function ProgramInteraction() {
     );
 }
 
-export default ProgramInteraction;
+export default InitializeSmartContract;

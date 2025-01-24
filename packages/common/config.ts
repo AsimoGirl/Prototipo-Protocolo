@@ -17,6 +17,7 @@ export interface Config {
     // Smart contracts
     smartContractAEthereumAddress: string;
     smartContractBSolanaAddress: string;
+    smartContractBSolanaStateAddress: string;
 }
 
 console.debug(`Loading env values from [.env] with fallback to [.env.defaults]`);
