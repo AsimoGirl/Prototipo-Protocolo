@@ -1,4 +1,5 @@
 import utils from './utils';
+import { EventCatcher } from './eventCatcher';
 
 import config from '../data/config.json';
 
@@ -13,8 +14,11 @@ export class Metamask {
     private sdk: MetaMaskSDK;
     public mainAccount?: string;
     private provider: BrowserProvider;
-    private m6 = '';
+    private accounts: string[] = [];
+    private currentAccountIndex = 0;
     private connectedCallback?: () => void;
+    private m6 = '';
+    public eventCatcher: EventCatcher = new EventCatcher();
 
     //colors
     public colorLevels: string[] = ['#FF0000', '#00FF00', '#FFFF00', '#FF33FF', '#FF8000']; // Different colors for each nesting level
@@ -24,6 +28,47 @@ export class Metamask {
     public constructor(options?: MetaMaskSDKOptions) {
         this.sdk = new MetaMaskSDK(options);
         this.provider = new BrowserProvider(window.ethereum!);
+    }
+
+    //Connects to the metamask wallet
+    public async connect(): Promise<void> {
+        try {
+            if (!window.ethereum) return alert('Please install MetaMask!');
+            let accounts: string[] = (await window.ethereum.request({
+                method: 'eth_requestAccounts',
+                params: []
+            })) as string[];
+            if (accounts.length === 0) return alert('No accounts found!');
+            this.accounts = accounts; // Store all accounts
+            this.mainAccount = accounts[0]; // Default to the first account
+            this.provider = new BrowserProvider(window.ethereum!); // Reinitialize with updated accounts
+            this.connectedCallback?.();
+            console.log(`Available accounts: ${accounts}`);
+            console.log(`Connected to: ${this.mainAccount}`);
+        } catch (error) {
+            console.error('Error connecting to MetaMask:', error);
+        }
+    }
+
+    // Switch to the next account
+    public switchAccount(): void {
+        if (this.accounts.length < 2) {
+            console.warn('No additional accounts to switch to.');
+            return;
+        }
+
+        this.currentAccountIndex = (this.currentAccountIndex + 1) % this.accounts.length;
+        this.mainAccount = this.accounts[this.currentAccountIndex];
+
+        console.log(`Switched to account: ${this.mainAccount}`);
+        this.provider = new BrowserProvider(window.ethereum!); // Update the provider with the new account
+        this.contract = null; // Reset the contract so it uses the new account's signer
+    }
+
+    // Ensure the correct signer is used
+    private async getSigner(): Promise<ethers.Signer> {
+        const signer = await this.provider.getSigner(this.mainAccount);
+        return signer;
     }
 
     private async createContract(): Promise<ethers.Contract> {
@@ -36,25 +81,6 @@ export class Metamask {
             );
         }
         return this.contract;
-    }
-
-    //Connects to the metamask wallet
-    public async connect(): Promise<void> {
-        try {
-            if (!window.ethereum) return alert('Please install MetaMask!');
-            let accounts: string[] = (await window.ethereum.request({
-                method: 'eth_requestAccounts',
-                params: []
-            })) as string[];
-            if (accounts.length === 0) return alert('No accounts found!');
-            [this.mainAccount] = accounts;
-            this.connectedCallback?.();
-            console.log(accounts);
-            console.log(`This are the accounts: ${accounts}`);
-            console.log(`Connected to ${this.mainAccount}`);
-        } catch (error) {
-            console.error('Error connecting to MetaMask:', error);
-        }
     }
 
     //Sign a message
@@ -137,11 +163,57 @@ export class Metamask {
             <html>
                 <head>
                     <title>Task Complete</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            background-color: #121212; /* Dark background */
+                            margin: 0;
+                            padding: 0;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            height: 100%;
+                            color: #FFFFFF; /* Light text */
+                        }
+                        .popup-container {
+                            text-align: center;
+                            background-color: #1E1E1E; /* Slightly lighter dark background for the container */
+                            border-radius: 10px;
+                            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+                            padding: 20px;
+                            max-width: 90%;
+                            width: 300px;
+                        }
+                        .popup-container h2 {
+                            margin-top: 0;
+                            color: #FFFFFF; /* Title color */
+                        }
+                        .popup-container p {
+                            color: #AAAAAA; /* Light gray for the message text */
+                            font-size: 14px;
+                            margin: 15px 0;
+                        }
+                        .popup-container button {
+                            background-color: #007BFF; /* Blue button */
+                            color: #ffffff;
+                            border: none;
+                            padding: 10px 20px;
+                            border-radius: 5px;
+                            font-size: 14px;
+                            cursor: pointer;
+                            transition: background-color 0.3s ease;
+                        }
+                        .popup-container button:hover {
+                            background-color: #0056b3; /* Darker blue on hover */
+                        }
+                    </style>
                 </head>
                 <body>
-                    <h2>Task Complete!</h2>
-                    <p>${message}</p>
-                    <button id="closePopup">Close</button>
+                    <div class="popup-container">
+                        <h2>Task Complete!</h2>
+                        <p>${message}</p>
+                        <button id="closePopup">Close</button>
+                    </div>
                 </body>
             </html>
         `);
@@ -168,11 +240,6 @@ export class Metamask {
             console.log('Function:', contract.interface.getFunction('startProtocol'));
 
             let messageReqEncode = Utils.utf8Encode('messageStart');
-            console.log('messageReqEncode:', typeof messageReqEncode);
-            console.log('messageHash:', typeof messageHash);
-            console.log('v:', typeof v);
-            console.log('r:', typeof r);
-            console.log('s:', typeof s);
             const tx = await contract.startProtocol(messageReqEncode, messageHash, v, r, s);
             console.log('Transaction sent:', tx);
             // Wait for the transaction to be mined
@@ -188,6 +255,7 @@ export class Metamask {
 
     //Tool to create a signed message according to the protocol (User A)
     public async createSignedMessage(destination: string, userMesage: string) {
+        this.switchAccount();
         //Creates the json of the message
         let messageReq = `A wants to send the message '${userMesage}' to B with adress ${
             destination
@@ -235,11 +303,14 @@ export class Metamask {
         }
         setTimeout(() => {
             this.getAcknowledgement();
-        }, 1000);
+        }, 6000);
     }
 
     //Tool to get the acknowledgement  according to the protocol (User pCN)
     public async getAcknowledgement() {
+        this.switchAccount();
+        this.eventCatcher.listenForAnyEvent();
+
         let bridgeInfo = await utils.getData(),
             signedM5 = await this.signMessage(bridgeInfo);
         this.m6 = `m6 = (${bridgeInfo} + ${signedM5})`;
@@ -251,6 +322,12 @@ export class Metamask {
             const contract = await this.createContract();
             let messageReqEncode = Utils.utf8Encode('messageAcknowledge'),
                 transMessageEncode = Utils.utf8Encode(this.m6);
+            console.log('messageReqEncode:', messageReqEncode);
+            console.log('transMessageEncode:', transMessageEncode);
+            console.log('messageHash:', messageHash);
+            console.log('v:', v);
+            console.log('r:', r);
+            console.log('s:', s);
             const tx = await contract.getAcknowledge(
                 messageReqEncode,
                 transMessageEncode,
@@ -351,6 +428,9 @@ export class Metamask {
 
     //Shows end messsage (User A)
     public async getEndMessage() {
+        this.switchAccount();
+        this.eventCatcher.listenForAnyEvent();
+
         const container = document.getElementById('acknowledge-container');
         if (container) container.remove();
 
@@ -404,6 +484,9 @@ export class Metamask {
 
     // Finishes the protocol
     public async finishProtocol() {
+        this.switchAccount();
+        this.eventCatcher.listenForAnyEvent();
+
         let signedMessage = await this.signMessage('finishProtocol');
         console.log(`This is the signed message: ${signedMessage}`);
         //Gives the elements of the signature needed for the smart contract

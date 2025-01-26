@@ -252,13 +252,13 @@ function InteractSCComponent() {
 
     const handleFunctions = async () => {
         startProtocol().then(() => {
-            alert('start protocol finished');
+            alert('Protocol started successfully');
 
             // Wait 10 seconds before requesting trasnsfer info
             setTimeout(() => {
                 getTransferInfo()
                     .then(() => {
-                        alert('transfer info finished');
+                        alert('Transfer info received');
                     })
                     .catch((err) => {
                         console.log('Error getting transfer info', err);
