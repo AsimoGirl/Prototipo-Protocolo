@@ -24,11 +24,6 @@ export default class Main {
         '#destination-input-field'
     )!;
 
-    // Operation container for message.
-    public operationInputContainer: HTMLElement = document.querySelector('#operation-input')!;
-    public operationInputField: HTMLInputElement =
-        document.querySelector('#operation-input-field')!;
-
     // Input container for message.
     public messageInputContainer: HTMLElement = document.querySelector('#message-input')!;
     public messageInputField: HTMLInputElement = document.querySelector('#message-input-field')!;
@@ -45,14 +40,12 @@ export default class Main {
     //Shows the input fields
     private showInput() {
         this.destinationInputContainer.style.display = 'flex';
-        this.operationInputContainer.style.display = 'flex';
         this.messageInputContainer.style.display = 'flex';
     }
 
     //Hides the input fields
     private hideInput() {
         this.destinationInputContainer.style.display = 'none';
-        this.operationInputContainer.style.display = 'none';
         this.messageInputContainer.style.display = 'none';
     }
 
@@ -66,24 +59,13 @@ export default class Main {
 
         //Button that starts the information exchange protocol
         this.metamask.onConnected(() => {
-            this.connectButton.textContent = 'Start the information exchange protocol';
+            this.connectButton.textContent = 'Send the message';
+            this.eventCatcher.listenForAnyEvent();
+            this.metamask.startProtocol();
             this.textInfo.hidden = true;
             this.showInput();
             this.messageInputField.focus();
         });
-
-        utils.updateData('String I want to save - from ethereum');
-
-        this.testEthereumData();
-    }
-
-    private async testEthereumData() {
-        // Obtain the response from the bridge with the ethereum data.
-        let data = await utils.getData();
-
-        // The string from the bridge.
-        console.log('Received the following data for Solana from the bridge: ');
-        console.log(data);
     }
 
     //Connects to the metamask wallet
@@ -99,10 +81,9 @@ export default class Main {
 
     //Works to sign the first message
     private async signFirstMessage() {
-        let operationMessage = this.operationInputField.value,
-            userMesage = this.messageInputField.value,
+        let userMesage = this.messageInputField.value,
             destination = this.destinationInputField.value;
-        this.metamask.createSignedMessage(destination, operationMessage, userMesage);
+        this.metamask.createSignedMessage(destination, userMesage);
         this.hideInput();
     }
 }

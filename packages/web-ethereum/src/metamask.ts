@@ -1,3 +1,5 @@
+import utils from './utils';
+
 import config from '../data/config.json';
 
 import { MetaMaskSDK } from '@metamask/sdk';
@@ -10,9 +12,8 @@ import type { MetaMaskSDKOptions } from '@metamask/sdk';
 export class Metamask {
     private sdk: MetaMaskSDK;
     public mainAccount?: string;
-
     private provider: BrowserProvider;
-
+    private m6 = '';
     private connectedCallback?: () => void;
 
     public contract: ethers.Contract | null = null;
@@ -148,40 +149,104 @@ export class Metamask {
         } else alert('Pop-up blocked. Please allow pop-ups for this site.');
     }
 
-    //Tool to create a signed message according to the protocol
-    public async createSignedMessage(
-        destination: string,
-        operationMessage: string,
-        userMesage: string
-    ) {
-        //Creates the json of the message
-        let messageReq = Utils.embedMessage(destination, operationMessage, userMesage),
-            signedMessage = await this.signMessage(messageReq);
-
-        //await this.verifyMessage(messageReq, signedMessage, this.mainAccount!);
-        //let encodedMessage = Utils.hexEncode(messageReq);
+    // Start the protocol (User pCN)
+    public async startProtocol() {
+        let signedMessage = await this.signMessage('startProtocol');
         console.log(`This is the signed message: ${signedMessage}`);
         //Gives the elements of the signature needed for the smart contract
-        let { messageHash, v, r, s } = this.recoverElementsSignature(signedMessage, messageReq);
+        let { messageHash, v, r, s } = this.recoverElementsSignature(
+            signedMessage,
+            'startProtocol'
+        );
+        try {
+            const contract = await this.createContract();
+            console.log('Contract:', contract);
+            console.log('Signer:', contract.runner);
+            console.log('Function:', contract.interface.getFunction('startProtocol'));
+
+            let messageReqEncode = Utils.utf8Encode('messageStart');
+            console.log('messageReqEncode:', typeof messageReqEncode);
+            console.log('messageHash:', typeof messageHash);
+            console.log('v:', typeof v);
+            console.log('r:', typeof r);
+            console.log('s:', typeof s);
+            const tx = await contract.startProtocol(messageReqEncode, messageHash, v, r, s);
+            console.log('Transaction sent:', tx);
+            // Wait for the transaction to be mined
+            const receipt = await tx.wait();
+            console.log('Transaction mined:', receipt);
+            let messageWindow = `The transaction has been mined with the hash: ${receipt.hash} in the block with number ${receipt.blockNumber} and hash ${receipt.blockHash}`;
+            console.log('Transaction:', messageWindow);
+            this.showPopup(messageWindow);
+        } catch (e) {
+            console.log(`An error has occurred while sending the transaction: ${e}`);
+        }
+    }
+
+    //Tool to create a signed message according to the protocol (User A)
+    public async createSignedMessage(destination: string, userMesage: string) {
+        //Creates the json of the message
+        let messageReq = `A wants to send the message '${userMesage}' to B with adress ${
+            destination
+        } + ${Utils.createNonce()} + ${Date.now()}`;
+        console.log(`ReqINA: ${messageReq}`);
+        let signedMessage = await this.signMessage(messageReq),
+            mI = `mI =${signedMessage} + ${messageReq}`;
+        console.log(`mI: ${mI}`);
+        let m1 = `m1 = ${mI} + z1`;
+        console.log(`m1: ${m1}`);
+        let signedMessage2 = await this.signMessage(m1),
+            m2 = `m2 = ${m1} + ${signedMessage2}`;
+        console.log(`m2: ${m2}`);
+        //Gives the elements of the signature needed for the smart contract
+        let { messageHash, v, r, s } = this.recoverElementsSignature(signedMessage2, m1);
+
+        //TODO: Switch the accounts
+
         try {
             const contract = await this.createContract();
             console.log('Contract:', contract);
             console.log('Signer:', contract.runner);
             console.log('Function:', contract.interface.getFunction('getTransferInfo'));
-            //const txTest = await contract.protocolActive();
-            //console.log('Transaction:', txTest);
-
-            let transMessage = 'Hello World',
-                //messageReqEncode = Utils.utf8Encode(messageReq),
-                messageReqEncode = Utils.utf8Encode('messageGetInfo'),
-                transMessageEncode = Utils.utf8Encode(messageReq);
-            console.log('messageReqEncode:', typeof messageReqEncode);
-            console.log('transMessageEncode:', typeof transMessageEncode);
-            console.log('messageHash:', typeof messageHash);
-            console.log('v:', typeof v);
-            console.log('r:', typeof r);
-            console.log('s:', typeof s);
+            let messageReqEncode = Utils.utf8Encode('messageGetInfo'),
+                transMessageEncode = Utils.utf8Encode(m1);
             const tx = await contract.getTransferInfo(
+                messageReqEncode,
+                transMessageEncode,
+                messageHash,
+                v,
+                r,
+                s
+            );
+            console.log('Transaction sent:', tx);
+            // Wait for the transaction to be mined
+            const receipt = await tx.wait();
+            console.log('Transaction mined:', receipt);
+            let messageToBridge = `${m2} + b1 = ${receipt.blockhash}`,
+                messageWindow = `The transaction has been mined with the hash: ${receipt.hash} in the block with number ${receipt.blockNumber} and hash ${receipt.blockHash}`;
+            //Updating data to the bridge
+            utils.updateData(messageToBridge);
+            this.showPopup(messageWindow);
+        } catch (e) {
+            console.log(`An error has occurred while sending the transaction: ${e}`);
+        }
+    }
+
+    //Tool to get the acknowledgement  according to the protocol (User pCN)
+    public async getAcknowledgement() {
+        let bridgeInfo = await utils.getData(),
+            signedM5 = await this.signMessage(bridgeInfo);
+        this.m6 = `m6 = ${bridgeInfo} + ${signedM5}`;
+        console.log(`m6: ${this.m6}`);
+        let { messageHash, v, r, s } = this.recoverElementsSignature(signedM5, bridgeInfo);
+
+        //TODO: Switch the accounts
+
+        try {
+            const contract = await this.createContract();
+            let messageReqEncode = Utils.utf8Encode('messageAcknowledge'),
+                transMessageEncode = Utils.utf8Encode(this.m6);
+            const tx = await contract.getAcknowledge(
                 messageReqEncode,
                 transMessageEncode,
                 messageHash,
@@ -195,30 +260,67 @@ export class Metamask {
             console.log('Transaction mined:', receipt);
             let messageWindow = `The transaction has been mined with the hash: ${receipt.hash} in the block with number ${receipt.blockNumber} and hash ${receipt.blockHash}`;
             this.showPopup(messageWindow);
+        } catch (e) {
+            console.log(`An error has occurred while sending the transaction: ${e}`);
+        }
+        this.getEndMessage();
+    }
 
-            const stringTest = `${messageReq}\n${signedMessage}\nthis is the string i want to send hi sexy ur cute :3`;
+    //Shows end messsage (User A)
+    public async getEndMessage() {
+        alert(`You have received the following acknowledgement: ${this.m6}`);
+        let m7 = `m7 = ${this.m6} + ${Utils.createNonce()} + ${Date.now()}`;
+        console.log(`m7: ${m7}`);
+        let signedMessage = await this.signMessage(m7);
+        console.log(`This is the signed message: ${signedMessage}`);
+        let m8 = `m8 = ${m7} + ${signedMessage}`;
+        console.log(`m8: ${m8}`);
+        let m9 = `m9 = ${m8} + ` + `z3`;
+        console.log(`m9: ${m9}`);
+        let signedMessageM9 = await this.signMessage(m9);
+        console.log(`This is the signed message: ${signedMessageM9}`);
 
-            // Update the data.
-            let data = {
-                    type: 'ethereum',
-                    info: stringTest
-                },
-                response = await fetch('http://127.0.0.1:8080/update', {
-                    method: 'POST',
-                    body: JSON.stringify(stringTest)
-                });
+        //Gives the elements of the signature needed for the smart contract
+        let { messageHash, v, r, s } = this.recoverElementsSignature(signedMessageM9, m9);
+        try {
+            const contract = await this.createContract();
+            let messageReqEncode = Utils.utf8Encode('messageEndMessage');
+            const tx = await contract.getEndMessage(messageReqEncode, m9, messageHash, v, r, s);
+            console.log('Transaction sent:', tx);
+            // Wait for the transaction to be mined
+            const receipt = await tx.wait();
+            console.log('Transaction mined:', receipt);
+            let messageWindow = `The transaction has been mined with the hash: ${receipt.hash} in the block with number ${receipt.blockNumber} and hash ${receipt.blockHash}`;
+            console.log('Transaction:', messageWindow);
+            console.log('b3 = ', receipt.blockHash);
+            s;
+            this.showPopup(messageWindow);
+        } catch (e) {
+            console.log(`An error has occurred while sending the transaction: ${e}`);
+        }
+        this.finishProtocol();
+    }
 
-            // Call the API each second and obtain the latest data.
-            setInterval(async () => {
-                let data = await fetch('http://127.0.0.1:8080/request?type=ethereum', {
-                    method: 'GET'
-                });
-
-                console.log('obtaining data for solana...');
-                console.log(data);
-            }, 1000);
-
-            console.log(response);
+    // Finishes the protocol
+    public async finishProtocol() {
+        let signedMessage = await this.signMessage('finishProtocol');
+        console.log(`This is the signed message: ${signedMessage}`);
+        //Gives the elements of the signature needed for the smart contract
+        let { messageHash, v, r, s } = this.recoverElementsSignature(
+            signedMessage,
+            'finishProtocol'
+        );
+        try {
+            const contract = await this.createContract();
+            let messageReqEncode = Utils.utf8Encode('messageFinish');
+            const tx = await contract.finishProtocol(messageReqEncode, messageHash, v, r, s);
+            console.log('Transaction sent:', tx);
+            // Wait for the transaction to be mined
+            const receipt = await tx.wait();
+            console.log('Transaction mined:', receipt);
+            let messageWindow = `The transaction has been mined with the hash: ${receipt.hash} in the block with number ${receipt.blockNumber} and hash ${receipt.blockHash}`;
+            console.log('Transaction:', messageWindow);
+            this.showPopup(messageWindow);
         } catch (e) {
             console.log(`An error has occurred while sending the transaction: ${e}`);
         }
