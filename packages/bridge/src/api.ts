@@ -28,7 +28,7 @@ export default class API {
     }
 
     private handleRoot(_request: Request, response: Response): void {
-        response.json({ status: 'Hello' });
+        response.json({ ethereumData: this.ethereumData, solanaData: this.solanaData });
     }
 
     private handleUpdate(request: Request, response: Response): void {
