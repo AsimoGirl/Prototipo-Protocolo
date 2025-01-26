@@ -1,6 +1,5 @@
 import { Metamask } from './metamask';
 import { EventCatcher } from './eventCatcher';
-import utils from './utils';
 
 import config from '../data/config.json';
 

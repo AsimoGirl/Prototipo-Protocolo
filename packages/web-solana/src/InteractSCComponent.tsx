@@ -188,16 +188,16 @@ function InteractSCComponent() {
         const signmACK = Buffer.from(rawSignmACK).toString('hex');
         console.log(`Signed mAK: ${signmACK}`);
 
-        const mACK1 = 'mAK = (' + signmACK + ' + ' + mACK + ') \n';
+        const mACK1 = 'mAK = (' + signmACK + ' + ' + mACK + ')';
         console.log(`mAK1: ${mACK1}`);
 
-        const mACK2 = '(mAK2 = ' + mACK1 + ' + ' + 'z2) \n';
+        const mACK2 = '\n mAK2 = (' + mACK1 + ' + ' + 'z2) ';
         const encodedMACK2 = new TextEncoder().encode(mACK2);
         const rawSignmACK2 = await wallet.signMessage(encodedMACK2);
         const signmACK2 = Buffer.from(rawSignmACK2).toString('hex');
         console.log(`Signed mAK2: ${signmACK2}`);
 
-        const mACK3 = 'mAK3 = (' + signmACK2 + ' + ' + mACK2 + ') \n';
+        const mACK3 = 'mAK3 = (' + signmACK2 + ' + ' + mACK2 + ')';
 
         //Verify the signature
         const verify2 = nacl.sign.detached.verify(
@@ -222,7 +222,7 @@ function InteractSCComponent() {
                 .rpc()
         );
 
-        const m5 = 'm5 = (' + mACK3 + ' + b2 =' + blockNumber + ')\n';
+        const m5 = 'm5 = (' + mACK3 + ' + b2 = ' + blockNumber + ') \n';
         console.log(`m5: ${m5}`);
         //Update to the bridge
         utils.updateData(m5);

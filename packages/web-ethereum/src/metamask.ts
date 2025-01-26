@@ -16,6 +16,9 @@ export class Metamask {
     private m6 = '';
     private connectedCallback?: () => void;
 
+    //colors
+    public colorLevels: string[] = ['#FF0000', '#00FF00', '#FFFF00', '#FF33FF', '#FF8000']; // Different colors for each nesting level
+
     public contract: ethers.Contract | null = null;
 
     public constructor(options?: MetaMaskSDKOptions) {
@@ -222,7 +225,7 @@ export class Metamask {
             // Wait for the transaction to be mined
             const receipt = await tx.wait();
             console.log('Transaction mined:', receipt);
-            let messageToBridge = `${m2} + b1 = ${receipt.blockhash}`,
+            let messageToBridge = `${m2} + b1 = ${receipt.blockHash}`,
                 messageWindow = `The transaction has been mined with the hash: ${receipt.hash} in the block with number ${receipt.blockNumber} and hash ${receipt.blockHash}`;
             //Updating data to the bridge
             utils.updateData(messageToBridge);
@@ -230,18 +233,20 @@ export class Metamask {
         } catch (e) {
             console.log(`An error has occurred while sending the transaction: ${e}`);
         }
+        setTimeout(() => {
+            this.getAcknowledgement();
+        }, 1000);
     }
 
     //Tool to get the acknowledgement  according to the protocol (User pCN)
     public async getAcknowledgement() {
         let bridgeInfo = await utils.getData(),
             signedM5 = await this.signMessage(bridgeInfo);
-        this.m6 = `m6 = ${bridgeInfo} + ${signedM5}`;
+        this.m6 = `m6 = (${bridgeInfo} + ${signedM5})`;
         console.log(`m6: ${this.m6}`);
+        this.createUIForAcknowledge(this.m6);
+
         let { messageHash, v, r, s } = this.recoverElementsSignature(signedM5, bridgeInfo);
-
-        //TODO: Switch the accounts
-
         try {
             const contract = await this.createContract();
             let messageReqEncode = Utils.utf8Encode('messageAcknowledge'),
@@ -263,25 +268,119 @@ export class Metamask {
         } catch (e) {
             console.log(`An error has occurred while sending the transaction: ${e}`);
         }
-        this.getEndMessage();
     }
+
+    public formatTransactionMessageWithColors = (message: string): string => {
+        let level = 0; // Track the current nesting depth
+        const result: string[] = []; // Store formatted characters
+
+        for (const char of message)
+            if (char === '(') {
+                const color = this.colorLevels[level % this.colorLevels.length]; // Use color corresponding to the current level
+                result.push(`<span style="color: ${color}">${char}</span>`);
+                level++; // Increment AFTER assigning the color
+            } else if (char === ')') {
+                level--; // Decrement BEFORE assigning the color
+                if (level < 0) {
+                    console.error('Unbalanced parentheses detected in message!');
+                    level = 0; // Reset level to avoid breaking further
+                }
+                const color = this.colorLevels[level % this.colorLevels.length]; // Use color corresponding to the current level
+                result.push(`<span style="color: ${color}">${char}</span>`);
+            } else result.push(char); // Non-parenthesis characters remain unchanged
+
+        // Check for any unclosed parentheses at the end
+        if (level > 0) console.error('Unbalanced parentheses detected at the end of the message!');
+
+        return result.join(''); // Join the array back into a string
+    };
+
+    public createUIForAcknowledge = (transactionMessage: string): void => {
+        const container = document.createElement('div');
+        container.id = 'acknowledge-container';
+        container.style.textAlign = 'left';
+        container.style.padding = '20px';
+        container.style.maxWidth = '1100px';
+        container.style.margin = '0 auto';
+        container.style.fontFamily = 'Arial, sans-serif';
+
+        // Message content
+        const messageContent = document.createElement('div');
+        messageContent.style.marginBottom = '20px';
+        messageContent.style.lineHeight = '1.6';
+        messageContent.style.fontSize = '14px'; // Smaller text size
+        messageContent.style.backgroundColor = '#1E1E1E'; // Slightly lighter background for text
+        messageContent.style.padding = '15px';
+        messageContent.style.borderRadius = '5px'; // Rounded corners for block
+        messageContent.style.whiteSpace = 'pre-wrap'; // Preserve line breaks and wrap text
+        messageContent.style.wordBreak = 'break-word'; // Prevent long strings from overflowing
+
+        // Format the transaction message
+        messageContent.innerHTML = `
+    <p>You have received the following message:</p>
+    <div>${this.formatTransactionMessageWithColors(transactionMessage)}</div>
+  `;
+        container.appendChild(messageContent);
+
+        // Instruction text
+        const instructionText = document.createElement('p');
+        instructionText.style.marginBottom = '20px';
+        instructionText.textContent = 'Press OK to acknowledge you received it.';
+        container.appendChild(instructionText);
+
+        // OK Button
+        const button = document.createElement('button');
+        button.textContent = 'OK';
+        button.style.padding = '10px 20px';
+        button.style.fontSize = '16px';
+        button.style.cursor = 'pointer';
+        button.style.color = '#fff';
+        button.style.border = 'none';
+        button.style.borderRadius = '5px';
+        button.style.marginTop = '10px';
+        button.style.transition = 'background-color 0.3s ease';
+        button.style.backgroundColor = '#0056b3';
+
+        button.addEventListener('click', async () => await this.getEndMessage());
+
+        container.appendChild(button);
+
+        // Append container to the body
+        document.body.appendChild(container);
+    };
 
     //Shows end messsage (User A)
     public async getEndMessage() {
-        alert(`You have received the following acknowledgement: ${this.m6}`);
-        let m7 = `m7 = ${this.m6} + ${Utils.createNonce()} + ${Date.now()}`;
+        const container = document.getElementById('acknowledge-container');
+        if (container) container.remove();
+
+        // Show "Protocol ending" message
+        const messageContainer = document.createElement('div');
+        messageContainer.id = 'protocolMessage'; // Unique ID for the message
+        messageContainer.style.textAlign = 'center';
+        messageContainer.style.padding = '20px';
+        messageContainer.style.fontFamily = 'Arial, sans-serif';
+        messageContainer.style.fontSize = '16px';
+        messageContainer.style.marginTop = '20px';
+
+        messageContainer.textContent = 'Thank you ! The protocol is concluding...'; // The message text
+
+        // Append the message container to the body
+        document.body.appendChild(messageContainer);
+
+        let m7 = `m7 = (${this.m6} + ${Utils.createNonce()} + ${Date.now()}) \n`;
         console.log(`m7: ${m7}`);
         let signedMessage = await this.signMessage(m7);
         console.log(`This is the signed message: ${signedMessage}`);
-        let m8 = `m8 = ${m7} + ${signedMessage}`;
+        let m8 = `m8 = (${m7} + ${signedMessage}) \n`;
         console.log(`m8: ${m8}`);
-        let m9 = `m9 = ${m8} + ` + `z3`;
+        let m9 = `m9 = (${m8} + ` + `z3) \n`;
         console.log(`m9: ${m9}`);
         let signedMessageM9 = await this.signMessage(m9);
         console.log(`This is the signed message: ${signedMessageM9}`);
-
-        //Gives the elements of the signature needed for the smart contract
-        let { messageHash, v, r, s } = this.recoverElementsSignature(signedMessageM9, m9);
+        let m10 = `m10 = (${m9} + ${signedMessageM9}) \n`,
+            //Gives the elements of the signature needed for the smart contract
+            { messageHash, v, r, s } = this.recoverElementsSignature(signedMessageM9, m9);
         try {
             const contract = await this.createContract();
             let messageReqEncode = Utils.utf8Encode('messageEndMessage');
@@ -292,8 +391,10 @@ export class Metamask {
             console.log('Transaction mined:', receipt);
             let messageWindow = `The transaction has been mined with the hash: ${receipt.hash} in the block with number ${receipt.blockNumber} and hash ${receipt.blockHash}`;
             console.log('Transaction:', messageWindow);
-            console.log('b3 = ', receipt.blockHash);
-            s;
+            let finalMesage = `${m10}b3 = ${receipt.blockHash}`;
+            console.log(
+                `This is the final message: ${finalMesage}, now the protocol will be finished`
+            );
             this.showPopup(messageWindow);
         } catch (e) {
             console.log(`An error has occurred while sending the transaction: ${e}`);
@@ -324,5 +425,7 @@ export class Metamask {
         } catch (e) {
             console.log(`An error has occurred while sending the transaction: ${e}`);
         }
+        const container = document.getElementById('protocolMessage');
+        if (container) container.textContent = 'The protocol has concluded successfully!';
     }
 }
