@@ -127,11 +127,12 @@ function InteractSCComponent() {
         console.log(`bridgeInfo: ${bridgeInfo}`);
 
         const m3 =
-            '\n m3 = ' +
+            '\n m3 = (' +
             bridgeInfo +
             ' + piL + ' +
             '2MCuBFEEWXHAqKMeZa9GUHLiRiMXqWPR5zmc9TEARUo4 + ' +
-            Date.now();
+            Date.now() +
+            ')';
         console.log(`M3: ${m3}`);
         const encodedM3 = new TextEncoder().encode(m3);
 
@@ -141,7 +142,7 @@ function InteractSCComponent() {
         const rawSignM3 = await wallet.signMessage(encodedM3);
         const signM3 = Buffer.from(rawSignM3).toString('hex');
         console.log(`Signed M3: ${signM3}`);
-        const m4 = 'm4 = ' + signM3 + ' + ' + m3;
+        const m4 = 'm4 = (' + signM3 + ' + ' + m3 + ') \n';
         setm4String(m4);
         //Verify the signature
         const verify = nacl.sign.detached.verify(encodedM3, rawSignM3, wallet.publicKey.toBuffer());
@@ -187,16 +188,16 @@ function InteractSCComponent() {
         const signmACK = Buffer.from(rawSignmACK).toString('hex');
         console.log(`Signed mAK: ${signmACK}`);
 
-        const mACK1 = 'mAK = ' + signmACK + ' + ' + mACK;
+        const mACK1 = 'mAK = (' + signmACK + ' + ' + mACK + ') \n';
         console.log(`mAK1: ${mACK1}`);
 
-        const mACK2 = '\n mAK2 = ' + mACK1 + ' + ' + 'z2';
+        const mACK2 = '(mAK2 = ' + mACK1 + ' + ' + 'z2) \n';
         const encodedMACK2 = new TextEncoder().encode(mACK2);
         const rawSignmACK2 = await wallet.signMessage(encodedMACK2);
         const signmACK2 = Buffer.from(rawSignmACK2).toString('hex');
         console.log(`Signed mAK2: ${signmACK2}`);
 
-        const mACK3 = '\n mAK3 = ' + signmACK2 + ' + ' + mACK2;
+        const mACK3 = 'mAK3 = (' + signmACK2 + ' + ' + mACK2 + ') \n';
 
         //Verify the signature
         const verify2 = nacl.sign.detached.verify(
@@ -221,7 +222,7 @@ function InteractSCComponent() {
                 .rpc()
         );
 
-        const m5 = 'm5 = ' + mACK3 + ' + b2 =' + blockNumber;
+        const m5 = 'm5 = (' + mACK3 + ' + b2 =' + blockNumber + ')\n';
         console.log(`m5: ${m5}`);
         //Update to the bridge
         utils.updateData(m5);
@@ -280,12 +281,52 @@ function InteractSCComponent() {
         }, 7000);
     };
 
+    const colorLevels = ['#FF0000', '#00FF00', '#FFFF00', '#FF33FF', '#FF00FF']; // Different colors for each nesting level
+
+    const formatTransactionMessageWithColors = (message) => {
+        let level = 0; // Keep track of nesting depth
+
+        return message.split('').map((char, index) => {
+            if (char === '(') {
+                const color = colorLevels[level % colorLevels.length]; // Cycle through colors
+                level++;
+                return (
+                    <span key={index} style={{ color }}>
+                        {char}
+                    </span>
+                );
+            } else if (char === ')') {
+                level--;
+                const color = colorLevels[level % colorLevels.length]; // Match closing parenthesis to the correct level color
+                return (
+                    <span key={index} style={{ color }}>
+                        {char}
+                    </span>
+                );
+            }
+            return char; // Return other characters as-is
+        });
+    };
+
     return (
         <div>
             {connected ? (
                 showTextBox ? (
                     <div>
-                        <h1>You have received the following message: {transactionMessage}</h1>
+                        <p>
+                            You have received the following message:
+                            <strong
+                                style={{
+                                    display: 'block',
+                                    marginTop: '10px',
+                                    padding: '5px',
+                                    borderRadius: '2px',
+                                    wordBreak: 'break-word'
+                                }}
+                            >
+                                {formatTransactionMessageWithColors(transactionMessage)}
+                            </strong>
+                        </p>
                         <p>Press OK to acknowledge you received it.</p>
                         <button
                             onClick={() => {

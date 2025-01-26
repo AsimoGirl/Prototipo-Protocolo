@@ -191,12 +191,12 @@ export class Metamask {
         } + ${Utils.createNonce()} + ${Date.now()}`;
         console.log(`ReqINA: ${messageReq}`);
         let signedMessage = await this.signMessage(messageReq),
-            mI = `mI =${signedMessage} + ${messageReq}`;
+            mI = `mI = (${signedMessage} + ${messageReq})\n`;
         console.log(`mI: ${mI}`);
-        let m1 = `m1 = ${mI} + z1`;
+        let m1 = `m1 = (${mI} + z1) \n`;
         console.log(`m1: ${m1}`);
         let signedMessage2 = await this.signMessage(m1),
-            m2 = `m2 = ${m1} + ${signedMessage2}`;
+            m2 = `m2 = (${m1} + ${signedMessage2}) \n`;
         console.log(`m2: ${m2}`);
         //Gives the elements of the signature needed for the smart contract
         let { messageHash, v, r, s } = this.recoverElementsSignature(signedMessage2, m1);
