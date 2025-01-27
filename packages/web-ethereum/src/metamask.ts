@@ -43,8 +43,8 @@ export class Metamask {
             this.mainAccount = accounts[0]; // Default to the first account
             this.provider = new BrowserProvider(window.ethereum!); // Reinitialize with updated accounts
             this.connectedCallback?.();
-            console.log(`Available accounts: ${accounts}`);
-            console.log(`Connected to: ${this.mainAccount}`);
+            //console.log(`Available accounts: ${accounts}`);
+            //console.log(`Connected to: ${this.mainAccount}`);
         } catch (error) {
             console.error('Error connecting to MetaMask:', error);
         }
@@ -60,7 +60,7 @@ export class Metamask {
         this.currentAccountIndex = (this.currentAccountIndex + 1) % this.accounts.length;
         this.mainAccount = this.accounts[this.currentAccountIndex];
 
-        console.log(`Switched to account: ${this.mainAccount}`);
+        //console.log(`Switched to account: ${this.mainAccount}`);
         this.provider = new BrowserProvider(window.ethereum!); // Update the provider with the new account
         this.contract = null; // Reset the contract so it uses the new account's signer
     }
@@ -137,9 +137,9 @@ export class Metamask {
     public async getValuesSignatures(signedMessage: string, messageReq: string) {
         let { messageHash, r, s, v } = this.recoverElementsSignature(signedMessage, messageReq),
             recAdd = ethers.recoverAddress(messageHash, signedMessage);
-        //console.log({ messageHash, r, s, v });
-        //console.log(`This is the recovered address: ${recAdd}`);
-        //console.log(ethers.id(messageReq));
+        console.log({ messageHash, r, s, v });
+        console.log(`This is the recovered address: ${recAdd}`);
+        console.log(ethers.id(messageReq));
     }
 
     public onConnected(callback: () => void): void {
@@ -233,10 +233,6 @@ export class Metamask {
                 signedMessage,
                 'startProtocol'
             );
-        console.log('messageHash:', messageHash);
-        console.log('v:', v);
-        console.log('r:', r);
-        console.log('s:', s);
         try {
             const contract = await this.createContract();
             //console.log('Contract:', contract);
@@ -267,10 +263,12 @@ export class Metamask {
         let signedMessage = await this.signMessage(messageReq),
             mI = `mI = (${signedMessage} + ${messageReq})\n`;
         console.log(`mI: ${mI}`);
-        let m1 = `m1 = (${mI} + z1) \n`;
+        const z1 =
+            '"proof": {"a": ["0x11","0x1f"],"b": [["0x29","0x14"],["0x23","0x20"]],"c": ["0x03","0x1a"]}';
+        let m1 = `m1 = (${mI} + z1 = ${z1}) \n`;
         console.log(`m1: ${m1}`);
         let signedMessage2 = await this.signMessage(m1),
-            m2 = `m2 = (${m1} + ${signedMessage2}) \n`;
+            m2 = `m2 = (${signedMessage2} + ${m1}) \n`;
         console.log(`m2: ${m2}`);
         //Gives the elements of the signature needed for the smart contract
         let { messageHash, v, r, s } = this.recoverElementsSignature(signedMessage2, m1);
@@ -303,17 +301,17 @@ export class Metamask {
         }
         setTimeout(() => {
             this.getAcknowledgement();
-        }, 20000);
+        }, 80000);
     }
 
     //Tool to get the acknowledgement  according to the protocol (User pCN)
     public async getAcknowledgement() {
         this.switchAccount();
         this.eventCatcher.listenForAnyEvent();
-        let m5 = await utils.getData();
-        console.log(`m5: ${m5}`);
-        let signedM5 = await this.signMessage(m5);
-        this.m6 = `m6 = (${m5} + ${signedM5})`;
+        let m5 = await utils.getData(),
+            //console.log(`m5: ${m5}`);
+            signedM5 = await this.signMessage(m5);
+        this.m6 = `m6 = (${signedM5} + ${m5}) \n`;
         console.log(`m6: ${this.m6}`);
         this.createUIForAcknowledge(this.m6);
 
@@ -335,22 +333,20 @@ export class Metamask {
 
         try {
             const contract = await this.createContract();
-            console.log('Contract:', contract);
-            console.log('Signer:', contract.runner);
-            let functionFragment = contract.interface.getFunction('getAcknowledge');
-            console.log('Function Fragment:', functionFragment);
-
+            //console.log('Contract:', contract);
+            //console.log('Signer:', contract.runner);
+            //console.log('Function Fragment:', contract.interface.getFunction('getAcknowledge'));
             let messageReqEncode = Utils.utf8Encode('messageAcknowledge'),
                 transMessageEncode = Utils.utf8Encode(this.m6);
-            console.log('messageReqEncode:', messageReqEncode);
-            console.log('transMessageEncode:', transMessageEncode);
-            console.log('messageHash:', messageHash);
-            console.log('v:', v);
-            console.log('r:', r);
-            console.log('s:', s);
+            //console.log('messageReqEncode:', messageReqEncode);
+            //console.log('transMessageEncode:', transMessageEncode);
+            //console.log('messageHash:', messageHash);
+            //console.log('v:', v);
+            //console.log('r:', r);
+            //console.log('s:', s);
             const tx = await contract.getAcknowledge(
-                'messageAcknowledge',
-                'Probando con una string',
+                messageReqEncode,
+                transMessageEncode,
                 messageHash,
                 v,
                 r,
@@ -470,19 +466,21 @@ export class Metamask {
         // Append the message container to the body
         document.body.appendChild(messageContainer);
 
-        let m7 = `m7 = (${this.m6} + ${Utils.createNonce()} + ${Date.now()}) \n`;
+        let m7 = `m7 = (${this.m6} + ${Date.now()} + ${Utils.createNonce()}) \n`;
         console.log(`m7: ${m7}`);
         let signedMessage = await this.signMessage(m7);
         console.log(`This is the signed message: ${signedMessage}`);
-        let m8 = `m8 = (${m7} + ${signedMessage}) \n`;
+        let m8 = `m8 = (${signedMessage} + ${m7}) \n`;
         console.log(`m8: ${m8}`);
-        let m9 = `m9 = (${m8} + ` + `z3) \n`;
+        const z3 = '"proof": {"a": ["0x7c","0x9f"],"b": [["0x74","0x30"],["0x23","0xf7"]}';
+        let m9 = `m9 = (${m8} + z3 = ${z3}) \n`;
         console.log(`m9: ${m9}`);
-        let signedMessageM9 = await this.signMessage(m9);
-        console.log(`This is the signed message: ${signedMessageM9}`);
-        let m10 = `m10 = (${m9} + ${signedMessageM9}) \n`,
-            //Gives the elements of the signature needed for the smart contract
-            { messageHash, v, r, s } = this.recoverElementsSignature(signedMessageM9, m9);
+        let signedMessageM9 = await this.signMessage(m9),
+            //console.log(`This is the signed message: ${signedMessageM9}`);
+            m10 = `m10 = (${signedMessageM9} + ${m9}) \n`;
+        console.log(`m10: ${m10}`);
+        //Gives the elements of the signature needed for the smart contract
+        let { messageHash, v, r, s } = this.recoverElementsSignature(signedMessageM9, m9);
         try {
             const contract = await this.createContract();
             let messageReqEncode = Utils.utf8Encode('messageEndMessage');
@@ -494,9 +492,9 @@ export class Metamask {
             let messageWindow = `The transaction has been mined with the hash: ${receipt.hash} in the block with number ${receipt.blockNumber} and hash ${receipt.blockHash}`;
             alert(messageWindow);
             console.log('Get End Message transaction:', messageWindow);
-            let finalMesage = `${m10} + b3 = ${receipt.blockHash}`;
+            //let finalMesage = `${m10} + b3 = ${receipt.blockHash}`;
             console.log(
-                `This is the final message: ${finalMesage}, now the protocol will be finished`
+                `This is the final block: ${receipt.blockHash}, now the protocol will be finished`
             );
             //this.showPopup(messageWindow);
         } catch (e) {
@@ -510,13 +508,13 @@ export class Metamask {
         this.switchAccount();
         this.eventCatcher.listenForAnyEvent();
 
-        let signedMessage = await this.signMessage('finishProtocol');
-        console.log(`This is the signed message: ${signedMessage}`);
-        //Gives the elements of the signature needed for the smart contract
-        let { messageHash, v, r, s } = this.recoverElementsSignature(
-            signedMessage,
-            'finishProtocol'
-        );
+        let signedMessage = await this.signMessage('finishProtocol'),
+            //console.log(`This is the signed message: ${signedMessage}`);
+            //Gives the elements of the signature needed for the smart contract
+            { messageHash, v, r, s } = this.recoverElementsSignature(
+                signedMessage,
+                'finishProtocol'
+            );
         try {
             const contract = await this.createContract();
             let messageReqEncode = Utils.utf8Encode('messageFinish');

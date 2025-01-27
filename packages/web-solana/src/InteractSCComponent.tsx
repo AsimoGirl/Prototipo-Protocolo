@@ -124,13 +124,13 @@ function InteractSCComponent() {
     const getTransferInfo = async () => {
         const bridgeInfo = await utils.getData();
 
-        console.log(`bridgeInfo: ${bridgeInfo}`);
+        //console.log(`bridgeInfo: ${bridgeInfo}`);
 
         const m3 =
             '\n m3 = (' +
             bridgeInfo +
             ' + piL + ' +
-            '2MCuBFEEWXHAqKMeZa9GUHLiRiMXqWPR5zmc9TEARUo4 + ' +
+            'IDpCN = 2MCuBFEEWXHAqKMeZa9GUHLiRiMXqWPR5zmc9TEARUo4 + ' +
             Date.now() +
             ')';
         console.log(`M3: ${m3}`);
@@ -141,7 +141,7 @@ function InteractSCComponent() {
         }
         const rawSignM3 = await wallet.signMessage(encodedM3);
         const signM3 = Buffer.from(rawSignM3).toString('hex');
-        console.log(`Signed M3: ${signM3}`);
+        //console.log(`Signed M3: ${signM3}`);
         const m4 = 'm4 = (' + signM3 + ' + ' + m3 + ') \n';
         setm4String(m4);
         //Verify the signature
@@ -169,7 +169,7 @@ function InteractSCComponent() {
 
     //Get the acknowledge
     const getAcknowledge = async () => {
-        console.log(`m4String: ${m4String}`);
+        //console.log(`m4String: ${m4String}`);
         const m4Hash = crypto.createHash('sha256').update(m4String).digest('hex');
         console.log(`M4 Hash: ${m4Hash}`);
         const mACK =
@@ -186,16 +186,19 @@ function InteractSCComponent() {
         }
         const rawSignmACK = await wallet.signMessage(encodedMAK);
         const signmACK = Buffer.from(rawSignmACK).toString('hex');
-        console.log(`Signed mAK: ${signmACK}`);
+        //console.log(`Signed mAK: ${signmACK}`);
 
         const mACK1 = 'mAK = (' + signmACK + ' + ' + mACK + ')';
-        console.log(`mAK1: ${mACK1}`);
+        console.log(`mAK: ${mACK1}`);
+        const z2 =
+            '"proof": {"a": ["0x5a","0x4b"],"b": [["0x58","0x42"],["0x89","0xb3"]],"c": ["0x07","0xa7"]}';
+        const mACK2 = '\n mAK2 = (' + mACK1 + ' + z2 = ' + z2 + ')';
+        console.log(`mAK2: ${mACK2}`);
 
-        const mACK2 = '\n mAK2 = (' + mACK1 + ' + ' + 'z2) ';
         const encodedMACK2 = new TextEncoder().encode(mACK2);
         const rawSignmACK2 = await wallet.signMessage(encodedMACK2);
         const signmACK2 = Buffer.from(rawSignmACK2).toString('hex');
-        console.log(`Signed mAK2: ${signmACK2}`);
+        //console.log(`Signed mAK2: ${signmACK2}`);
 
         const mACK3 = 'mAK3 = (' + signmACK2 + ' + ' + mACK2 + ')';
 
@@ -253,12 +256,13 @@ function InteractSCComponent() {
     const handleFunctions = async () => {
         startProtocol().then(() => {
             alert('Protocol started successfully');
-
+            console.log('Protocol started');
             // Wait 10 seconds before requesting trasnsfer info
             setTimeout(() => {
                 getTransferInfo()
                     .then(() => {
                         alert('Transfer info received');
+                        console.log('Transfer info received');
                     })
                     .catch((err) => {
                         console.log('Error getting transfer info', err);
@@ -345,13 +349,13 @@ function InteractSCComponent() {
                 ) : hideTextBox ? (
                     <div>
                         <h1>Message acknowledged and sent to the bridge</h1>
-                        <p>Protocol finished. You can now disconnect your wallet.</p>
+                        <p>Protocol has finished.</p>
                     </div>
                 ) : (
                     <>
                         <div id="text-info" className="hero">
                             <h2>Prototype for the information transfer bridge protocol</h2>
-                            <p>Initiate the protocol by pressing the connect wallet button.</p>
+                            <p>Initiate the protocol by pressing the Start Protol button.</p>
                         </div>
                         <div style={{ marginTop: '20px' }}>
                             <button
