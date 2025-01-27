@@ -355,7 +355,7 @@ function InteractSCComponent() {
                     <>
                         <div id="text-info" className="hero">
                             <h2>Prototype for the information transfer bridge protocol</h2>
-                            <p>Initiate the protocol by pressing the Start Protol button.</p>
+                            <p>Initiate the protocol by pressing the Start Protocol button.</p>
                         </div>
                         <div style={{ marginTop: '20px' }}>
                             <button
