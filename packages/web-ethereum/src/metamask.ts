@@ -6,7 +6,7 @@ import config from '../data/config.json';
 import { MetaMaskSDK } from '@metamask/sdk';
 import { ethers, BrowserProvider } from 'ethers';
 import Utils from '@thesis/common/utils/utils';
-import TestContractABI from '@thesis/web-ethereum/smartContracts/TestContractABI.json';
+import TestContractABI from '@thesis/web-ethereum/smartContracts/ProtocolActionsABI.json';
 
 import type { MetaMaskSDKOptions } from '@metamask/sdk';
 
@@ -17,8 +17,8 @@ export class Metamask {
     private accounts: string[] = [];
     private currentAccountIndex = 0;
     private connectedCallback?: () => void;
-    private m6 = '';
     public eventCatcher: EventCatcher = new EventCatcher();
+    public m6: string = '';
 
     //colors
     public colorLevels: string[] = ['#FF0000', '#00FF00', '#FFFF00', '#FF33FF', '#FF8000']; // Different colors for each nesting level
@@ -89,7 +89,7 @@ export class Metamask {
             let signer = await this.provider.getSigner(),
                 signature = await signer.signMessage(message),
                 signerAccount = await signer.getAddress();
-            console.log(`This is the signature: ${signature} and the address: ${signerAccount}`);
+            //console.log(`This is the signature: ${signature} and the address: ${signerAccount}`);
             return signature;
         } catch (e) {
             console.log(`An error ${e} has occurred while signing the message: ${message}`);
@@ -137,9 +137,9 @@ export class Metamask {
     public async getValuesSignatures(signedMessage: string, messageReq: string) {
         let { messageHash, r, s, v } = this.recoverElementsSignature(signedMessage, messageReq),
             recAdd = ethers.recoverAddress(messageHash, signedMessage);
-        console.log({ messageHash, r, s, v });
-        console.log(`This is the recovered address: ${recAdd}`);
-        console.log(ethers.id(messageReq));
+        //console.log({ messageHash, r, s, v });
+        //console.log(`This is the recovered address: ${recAdd}`);
+        //console.log(ethers.id(messageReq));
     }
 
     public onConnected(callback: () => void): void {
@@ -226,28 +226,33 @@ export class Metamask {
 
     // Start the protocol (User pCN)
     public async startProtocol() {
-        let signedMessage = await this.signMessage('startProtocol');
-        console.log(`This is the signed message: ${signedMessage}`);
-        //Gives the elements of the signature needed for the smart contract
-        let { messageHash, v, r, s } = this.recoverElementsSignature(
-            signedMessage,
-            'startProtocol'
-        );
+        let signedMessage = await this.signMessage('startProtocol'),
+            //console.log(`This is the signed message: ${signedMessage}`);
+            //Gives the elements of the signature needed for the smart contract
+            { messageHash, v, r, s } = this.recoverElementsSignature(
+                signedMessage,
+                'startProtocol'
+            );
+        console.log('messageHash:', messageHash);
+        console.log('v:', v);
+        console.log('r:', r);
+        console.log('s:', s);
         try {
             const contract = await this.createContract();
-            console.log('Contract:', contract);
-            console.log('Signer:', contract.runner);
-            console.log('Function:', contract.interface.getFunction('startProtocol'));
+            //console.log('Contract:', contract);
+            //console.log('Signer:', contract.runner);
+            //console.log('Function:', contract.interface.getFunction('startProtocol'));
 
             let messageReqEncode = Utils.utf8Encode('messageStart');
             const tx = await contract.startProtocol(messageReqEncode, messageHash, v, r, s);
-            console.log('Transaction sent:', tx);
+            console.log('Transaction StartProtocol sent:', tx);
             // Wait for the transaction to be mined
-            const receipt = await tx.wait();
-            console.log('Transaction mined:', receipt);
-            let messageWindow = `The transaction has been mined with the hash: ${receipt.hash} in the block with number ${receipt.blockNumber} and hash ${receipt.blockHash}`;
-            console.log('Transaction:', messageWindow);
-            this.showPopup(messageWindow);
+            let receipt = await tx.wait(),
+                //console.log('Transaction mined:', receipt);
+                messageWindow = `The transaction has been mined with the hash: ${receipt.hash} in the block with number ${receipt.blockNumber} and hash ${receipt.blockHash}`;
+            alert(messageWindow);
+            console.log('Start Protocol transaction:', messageWindow);
+            //this.showPopup(messageWindow);
         } catch (e) {
             console.log(`An error has occurred while sending the transaction: ${e}`);
         }
@@ -257,9 +262,7 @@ export class Metamask {
     public async createSignedMessage(destination: string, userMesage: string) {
         this.switchAccount();
         //Creates the json of the message
-        let messageReq = `A wants to send the message '${userMesage}' to B with adress ${
-            destination
-        } + ${Utils.createNonce()} + ${Date.now()}`;
+        let messageReq = `A wants to send the message '${userMesage}' to B with adress ${destination} + ${Utils.createNonce()} + ${Date.now()}`;
         console.log(`ReqINA: ${messageReq}`);
         let signedMessage = await this.signMessage(messageReq),
             mI = `mI = (${signedMessage} + ${messageReq})\n`;
@@ -272,13 +275,8 @@ export class Metamask {
         //Gives the elements of the signature needed for the smart contract
         let { messageHash, v, r, s } = this.recoverElementsSignature(signedMessage2, m1);
 
-        //TODO: Switch the accounts
-
         try {
             const contract = await this.createContract();
-            console.log('Contract:', contract);
-            console.log('Signer:', contract.runner);
-            console.log('Function:', contract.interface.getFunction('getTransferInfo'));
             let messageReqEncode = Utils.utf8Encode('messageGetInfo'),
                 transMessageEncode = Utils.utf8Encode(m1);
             const tx = await contract.getTransferInfo(
@@ -289,37 +287,59 @@ export class Metamask {
                 r,
                 s
             );
-            console.log('Transaction sent:', tx);
+            console.log('Transaction getTransferInfo sent:', tx);
             // Wait for the transaction to be mined
-            const receipt = await tx.wait();
-            console.log('Transaction mined:', receipt);
-            let messageToBridge = `${m2} + b1 = ${receipt.blockHash}`,
+            let receipt = await tx.wait(),
+                //console.log('Transaction mined:', receipt);
+                messageToBridge = `${m2} + b1 = ${receipt.blockHash}`,
                 messageWindow = `The transaction has been mined with the hash: ${receipt.hash} in the block with number ${receipt.blockNumber} and hash ${receipt.blockHash}`;
             //Updating data to the bridge
             utils.updateData(messageToBridge);
-            this.showPopup(messageWindow);
+            alert(messageWindow);
+            console.log('Get Transfer Info transaction:', messageWindow);
+            //this.showPopup(messageWindow);
         } catch (e) {
             console.log(`An error has occurred while sending the transaction: ${e}`);
         }
         setTimeout(() => {
             this.getAcknowledgement();
-        }, 6000);
+        }, 20000);
     }
 
     //Tool to get the acknowledgement  according to the protocol (User pCN)
     public async getAcknowledgement() {
         this.switchAccount();
         this.eventCatcher.listenForAnyEvent();
-
-        let bridgeInfo = await utils.getData(),
-            signedM5 = await this.signMessage(bridgeInfo);
-        this.m6 = `m6 = (${bridgeInfo} + ${signedM5})`;
+        let m5 = await utils.getData();
+        console.log(`m5: ${m5}`);
+        let signedM5 = await this.signMessage(m5);
+        this.m6 = `m6 = (${m5} + ${signedM5})`;
         console.log(`m6: ${this.m6}`);
         this.createUIForAcknowledge(this.m6);
 
-        let { messageHash, v, r, s } = this.recoverElementsSignature(signedM5, bridgeInfo);
+        let { messageHash, v, r, s } = this.recoverElementsSignature(signedM5, m5);
+
+        // Validate parameters before sending the transaction
+        if (!ethers.isHexString(messageHash, 32)) {
+            console.error('Invalid messageHash: Must be a 32-byte hex string');
+            return;
+        }
+        if (!ethers.isHexString(r, 32) || !ethers.isHexString(s, 32)) {
+            console.error('Invalid r or s: Must be 32-byte hex strings');
+            return;
+        }
+        if (v !== 27 && v !== 28) {
+            console.error('Invalid v: Must be 27 or 28');
+            return;
+        }
+
         try {
             const contract = await this.createContract();
+            console.log('Contract:', contract);
+            console.log('Signer:', contract.runner);
+            let functionFragment = contract.interface.getFunction('getAcknowledge');
+            console.log('Function Fragment:', functionFragment);
+
             let messageReqEncode = Utils.utf8Encode('messageAcknowledge'),
                 transMessageEncode = Utils.utf8Encode(this.m6);
             console.log('messageReqEncode:', messageReqEncode);
@@ -329,19 +349,21 @@ export class Metamask {
             console.log('r:', r);
             console.log('s:', s);
             const tx = await contract.getAcknowledge(
-                messageReqEncode,
-                transMessageEncode,
+                'messageAcknowledge',
+                'Probando con una string',
                 messageHash,
                 v,
                 r,
                 s
             );
-            console.log('Transaction sent:', tx);
+            console.log('Transaction getAcknowledge sent:', tx);
             // Wait for the transaction to be mined
             const receipt = await tx.wait();
-            console.log('Transaction mined:', receipt);
+            //console.log('Transaction mined:', receipt);
             let messageWindow = `The transaction has been mined with the hash: ${receipt.hash} in the block with number ${receipt.blockNumber} and hash ${receipt.blockHash}`;
-            this.showPopup(messageWindow);
+            //this.showPopup(messageWindow);
+            alert(messageWindow);
+            console.log('Get Transfer Info transaction:', messageWindow);
         } catch (e) {
             console.log(`An error has occurred while sending the transaction: ${e}`);
         }
@@ -394,7 +416,7 @@ export class Metamask {
 
         // Format the transaction message
         messageContent.innerHTML = `
-    <p>You have received the following message:</p>
+    <p>You have received the following acknowledgement message from B:</p>
     <div>${this.formatTransactionMessageWithColors(transactionMessage)}</div>
   `;
         container.appendChild(messageContent);
@@ -465,17 +487,18 @@ export class Metamask {
             const contract = await this.createContract();
             let messageReqEncode = Utils.utf8Encode('messageEndMessage');
             const tx = await contract.getEndMessage(messageReqEncode, m9, messageHash, v, r, s);
-            console.log('Transaction sent:', tx);
+            console.log('Get End Message Transaction sent:', tx);
             // Wait for the transaction to be mined
             const receipt = await tx.wait();
-            console.log('Transaction mined:', receipt);
+            //console.log('Transaction mined:', receipt);
             let messageWindow = `The transaction has been mined with the hash: ${receipt.hash} in the block with number ${receipt.blockNumber} and hash ${receipt.blockHash}`;
-            console.log('Transaction:', messageWindow);
-            let finalMesage = `${m10}b3 = ${receipt.blockHash}`;
+            alert(messageWindow);
+            console.log('Get End Message transaction:', messageWindow);
+            let finalMesage = `${m10} + b3 = ${receipt.blockHash}`;
             console.log(
                 `This is the final message: ${finalMesage}, now the protocol will be finished`
             );
-            this.showPopup(messageWindow);
+            //this.showPopup(messageWindow);
         } catch (e) {
             console.log(`An error has occurred while sending the transaction: ${e}`);
         }
@@ -498,13 +521,15 @@ export class Metamask {
             const contract = await this.createContract();
             let messageReqEncode = Utils.utf8Encode('messageFinish');
             const tx = await contract.finishProtocol(messageReqEncode, messageHash, v, r, s);
-            console.log('Transaction sent:', tx);
+            console.log('Finish protocol transaction sent:', tx);
             // Wait for the transaction to be mined
             const receipt = await tx.wait();
-            console.log('Transaction mined:', receipt);
+            //console.log('Transaction mined:', receipt);
             let messageWindow = `The transaction has been mined with the hash: ${receipt.hash} in the block with number ${receipt.blockNumber} and hash ${receipt.blockHash}`;
             console.log('Transaction:', messageWindow);
-            this.showPopup(messageWindow);
+            //this.showPopup(messageWindow);
+            alert(messageWindow);
+            console.log('Finish Protocol transaction:', messageWindow);
         } catch (e) {
             console.log(`An error has occurred while sending the transaction: ${e}`);
         }

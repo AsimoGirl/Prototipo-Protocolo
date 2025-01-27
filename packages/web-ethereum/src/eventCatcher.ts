@@ -56,7 +56,7 @@ export class EventCatcher {
                             blockhash: blockHash
                         },
                         protocolStartedEvent = JSON.stringify(protocolStartedEventData);
-                    console.log(protocolStartedEvent);
+                    console.log(`Event: ${protocolStartedEvent}`);
                 } catch (error) {
                     console.error('Error handling ProtocolStartedA event:', error);
                 }
@@ -86,7 +86,7 @@ export class EventCatcher {
                         protocolGetTransferInfoEvent = JSON.stringify(
                             protocolGetTransferInfoEventData
                         );
-                    console.log(protocolGetTransferInfoEvent);
+                    console.log(`Event: ${protocolGetTransferInfoEvent}`);
                 } catch (error) {
                     console.error('Error handling ProtocolStartedA event:', error);
                 }
@@ -101,6 +101,22 @@ export class EventCatcher {
                 break;
             case 'AcknowledgeMessageCommittedA':
                 console.log('Catched Event AcknowledgeMessageCommittedA');
+                try {
+                    let [starter, description, messageContent] = eventLog.args,
+                        timestamp = eventLog.args[3].toString(),
+                        acknowledgeEventData = {
+                            starter,
+                            description,
+                            messageContent,
+                            timestamp,
+                            blocknumber: blockNumber,
+                            blockhash: blockHash
+                        },
+                        acknowledgeMessageCommitEvent = JSON.stringify(acknowledgeEventData);
+                    console.log(`Event: ${acknowledgeMessageCommitEvent}`);
+                } catch (error) {
+                    console.error('Error handling AcknowledgeMessageCommittedA event:', error);
+                }
                 break;
             case 'AcknowledgeMessageErrorA':
                 console.log(
@@ -112,6 +128,22 @@ export class EventCatcher {
                 break;
             case 'EndMessageCommittedA':
                 console.log('Catched Event EndMessageCommittedA');
+                try {
+                    let [starter, description, messageContent] = eventLog.args,
+                        timestamp = eventLog.args[3].toString(),
+                        endMessageEventData = {
+                            starter,
+                            description,
+                            messageContent,
+                            timestamp,
+                            blocknumber: blockNumber,
+                            blockhash: blockHash
+                        },
+                        endMessageCommitEvent = JSON.stringify(endMessageEventData);
+                    console.log(`Event: ${endMessageCommitEvent}`);
+                } catch (error) {
+                    console.error('Error handling EndMessageCommittedA event:', error);
+                }
                 break;
             case 'EndMessageErrorA':
                 console.log(
@@ -123,6 +155,21 @@ export class EventCatcher {
                 break;
             case 'ProtocolFinishedA':
                 console.log('Catched Event ProtocolFinishedA');
+                try {
+                    let [starter, description] = eventLog.args,
+                        timestamp = eventLog.args[2].toString(),
+                        protocolFinishedEventData = {
+                            starter,
+                            description,
+                            timestamp,
+                            blocknumber: blockNumber,
+                            blockhash: blockHash
+                        },
+                        protocolFinishedEvent = JSON.stringify(protocolFinishedEventData);
+                    console.log(`Event: ${protocolFinishedEvent}`);
+                } catch (error) {
+                    console.error('Error handling ProtocolFinishedA event:', error);
+                }
                 break;
             case 'ProtocolFinishedErrorA':
                 console.log(
