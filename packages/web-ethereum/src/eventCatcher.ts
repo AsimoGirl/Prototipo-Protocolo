@@ -29,7 +29,7 @@ export class EventCatcher {
             console.error('Invalid or empty event args');
             return;
         }
-        console.log(args);
+        //console.log(args);
         // Safely access the last element's log property
         let eventLog = args[args.length - 1].log;
         if (!eventLog) {
@@ -88,7 +88,7 @@ export class EventCatcher {
                         );
                     console.log(`Event: ${protocolGetTransferInfoEvent}`);
                 } catch (error) {
-                    console.error('Error handling ProtocolStartedA event:', error);
+                    console.error('Error handling TransferMessageCommittedA event:', error);
                 }
                 break;
             case 'TransferMessageErrorA':

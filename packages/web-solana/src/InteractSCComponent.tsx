@@ -107,6 +107,11 @@ function InteractSCComponent() {
 
     //Start the protocol
     const startProtocol = async () => {
+        const encodedStart = new TextEncoder().encode('startProtocol');
+        if (!wallet.signMessage) {
+            throw new Error('Wallet does not support message signing');
+        }
+        const rawSignStart = await wallet.signMessage(encodedStart);
         const program = getProgram();
         const messageRequest = 'messageStart';
         await handleTransaction(async () =>

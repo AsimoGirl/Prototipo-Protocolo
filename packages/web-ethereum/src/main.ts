@@ -84,6 +84,7 @@ export default class Main {
             destination = this.destinationInputField.value;
         this.metamask.createSignedMessage(destination, userMesage);
         this.hideInput();
+        this.connectButton.hidden = true;
     }
 }
 
