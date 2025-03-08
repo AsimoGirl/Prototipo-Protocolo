@@ -4,6 +4,7 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import Utils from '@thesis/common/utils/utils';
 //import { PublicKey, Keypair } from '@solana/web3.js';
 import nacl from 'tweetnacl';
+//import ProgramInteraction from './ProgramInteraction';
 
 const WalletInteraction: React.FC = () => {
     const { publicKey, signMessage, connected } = useWallet();

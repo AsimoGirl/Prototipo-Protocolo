@@ -1,4 +1,5 @@
-import config from '@thesis/common/config';
+import config from '../data/config.json';
+
 import Utils from '@thesis/common/utils/utils';
 import TestContractABI from '@thesis/web-ethereum/smartContracts/TestContractABI.json';
 import { ethers } from 'ethers';
@@ -7,13 +8,13 @@ export class EventCatcher {
     //Create a provider
     public provider = ethers.getDefaultProvider('sepolia', {
         //etherscan: ETHER_SCAN_API_KEY,
-        infura: config.infuraApiKey,
-        alchemy: config.alchemyApiKey,
-        chainstack: config.chainstackApiKey,
+        infura: config.INFURA_API_KEY,
+        alchemy: config.ALCHEMY_API_KEY,
+        chainstack: config.CHAINSTACK_API_KEY,
         exclusive: ['infura', 'alchemy', 'chainstack']
     });
 
-    public contractAddress = config.smartContractAEthereumAddress;
+    public contractAddress = config.SMART_CONTRACT_A_ETHEREUM_ADDRESS;
 
     //Duration in milliseconds (90 seconds) of the time to look for events
     public duration = 90000;
@@ -28,7 +29,7 @@ export class EventCatcher {
             console.error('Invalid or empty event args');
             return;
         }
-        console.log(args);
+        //console.log(args);
         // Safely access the last element's log property
         let eventLog = args[args.length - 1].log;
         if (!eventLog) {
@@ -55,7 +56,7 @@ export class EventCatcher {
                             blockhash: blockHash
                         },
                         protocolStartedEvent = JSON.stringify(protocolStartedEventData);
-                    console.log(protocolStartedEvent);
+                    console.log(`Event: ${protocolStartedEvent}`);
                 } catch (error) {
                     console.error('Error handling ProtocolStartedA event:', error);
                 }
@@ -85,9 +86,9 @@ export class EventCatcher {
                         protocolGetTransferInfoEvent = JSON.stringify(
                             protocolGetTransferInfoEventData
                         );
-                    console.log(protocolGetTransferInfoEvent);
+                    console.log(`Event: ${protocolGetTransferInfoEvent}`);
                 } catch (error) {
-                    console.error('Error handling ProtocolStartedA event:', error);
+                    console.error('Error handling TransferMessageCommittedA event:', error);
                 }
                 break;
             case 'TransferMessageErrorA':
@@ -100,6 +101,22 @@ export class EventCatcher {
                 break;
             case 'AcknowledgeMessageCommittedA':
                 console.log('Catched Event AcknowledgeMessageCommittedA');
+                try {
+                    let [starter, description, messageContent] = eventLog.args,
+                        timestamp = eventLog.args[3].toString(),
+                        acknowledgeEventData = {
+                            starter,
+                            description,
+                            messageContent,
+                            timestamp,
+                            blocknumber: blockNumber,
+                            blockhash: blockHash
+                        },
+                        acknowledgeMessageCommitEvent = JSON.stringify(acknowledgeEventData);
+                    console.log(`Event: ${acknowledgeMessageCommitEvent}`);
+                } catch (error) {
+                    console.error('Error handling AcknowledgeMessageCommittedA event:', error);
+                }
                 break;
             case 'AcknowledgeMessageErrorA':
                 console.log(
@@ -111,6 +128,22 @@ export class EventCatcher {
                 break;
             case 'EndMessageCommittedA':
                 console.log('Catched Event EndMessageCommittedA');
+                try {
+                    let [starter, description, messageContent] = eventLog.args,
+                        timestamp = eventLog.args[3].toString(),
+                        endMessageEventData = {
+                            starter,
+                            description,
+                            messageContent,
+                            timestamp,
+                            blocknumber: blockNumber,
+                            blockhash: blockHash
+                        },
+                        endMessageCommitEvent = JSON.stringify(endMessageEventData);
+                    console.log(`Event: ${endMessageCommitEvent}`);
+                } catch (error) {
+                    console.error('Error handling EndMessageCommittedA event:', error);
+                }
                 break;
             case 'EndMessageErrorA':
                 console.log(
@@ -122,6 +155,21 @@ export class EventCatcher {
                 break;
             case 'ProtocolFinishedA':
                 console.log('Catched Event ProtocolFinishedA');
+                try {
+                    let [starter, description] = eventLog.args,
+                        timestamp = eventLog.args[2].toString(),
+                        protocolFinishedEventData = {
+                            starter,
+                            description,
+                            timestamp,
+                            blocknumber: blockNumber,
+                            blockhash: blockHash
+                        },
+                        protocolFinishedEvent = JSON.stringify(protocolFinishedEventData);
+                    console.log(`Event: ${protocolFinishedEvent}`);
+                } catch (error) {
+                    console.error('Error handling ProtocolFinishedA event:', error);
+                }
                 break;
             case 'ProtocolFinishedErrorA':
                 console.log(

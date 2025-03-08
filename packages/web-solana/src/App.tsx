@@ -1,10 +1,9 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import { WalletModalProvider, WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets';
 import { clusterApiUrl } from '@solana/web3.js';
-import WalletInteraction from './WalletInteraction'; // Import WalletInteraction component
-import ProgramInteraction from './ProgramInteraction'; // Import ProgramInteraction component
+import InteractSCComponent from './InteractSCComponent';
 
 import bridgelogo from './assets/bridgelogo.png'; // Import Ethereum logo
 import solanaLogo from './assets/solanaLogo.png'; // Import bridge icon
@@ -38,13 +37,7 @@ function App() {
                             </div>
                         </header>
                         <main>
-                            <div id="text-info" className="hero">
-                                <h2>Prototype for the information transfer bridge protocol</h2>
-                                <p>Initiate the protocol by pressing the connect wallet button.</p>
-                            </div>
-                            <ProgramInteraction />
-                            {/* WalletInteraction Component handles input fields and signing */}
-                            <WalletInteraction />
+                            <InteractSCComponent />
                         </main>
                     </div>
                 </WalletModalProvider>

@@ -1,3 +1,5 @@
+//import { appendFile } from 'fs';
+
 import utf8 from 'utf8';
 
 export default {
@@ -48,5 +50,9 @@ export default {
             nonce: this.createNonce()
         };
         return JSON.stringify(data);
+    },
+
+    concatenateElements(existing: string, toAdd: string): string {
+        return existing + toAdd;
     }
 };

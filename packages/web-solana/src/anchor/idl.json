@@ -1,9 +1,518 @@
 {
-    "address": "DWx8BzghjiypNmRDyeeCZGo66RKrJiXBZf6BXZLpd7Dn",
-    "metadata": {
-        "version": "0.1.0",
-        "spec": "0.1.0",
-        "name": "hello_world"
+  "address": "FJ6c8rYYsAa744icd1rnPhTNHepsU9QCYpppo9xxenwj",
+  "metadata": {
+    "name": "protocol_actions_scb_test",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "finish_protocol",
+      "docs": [
+        "4) Finish the protocol."
+      ],
+      "discriminator": [
+        63,
+        231,
+        198,
+        74,
+        226,
+        15,
+        87,
+        145
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "signer": true
+        },
+        {
+          "name": "program_state",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "message_request",
+          "type": "string"
+        }
+      ]
     },
-    "instructions": [{ "name": "hello", "accounts": [], "args": [] }]
+    {
+      "name": "get_acknowledge",
+      "docs": [
+        "3) Acknowledge the transfer info."
+      ],
+      "discriminator": [
+        231,
+        171,
+        42,
+        10,
+        228,
+        15,
+        118,
+        199
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "signer": true
+        },
+        {
+          "name": "program_state",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "message_request",
+          "type": "string"
+        },
+        {
+          "name": "transaction_message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "get_transfer_info",
+      "docs": [
+        "2) Get the transfer info."
+      ],
+      "discriminator": [
+        175,
+        117,
+        229,
+        15,
+        9,
+        169,
+        212,
+        176
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "signer": true
+        },
+        {
+          "name": "program_state",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "message_request",
+          "type": "string"
+        },
+        {
+          "name": "transaction_message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "initialize_program_state",
+      "docs": [
+        "0) Initialize the ProgramState account.",
+        "",
+        "You only need to do this once. After it's created, you can reuse it",
+        "for all subsequent calls to `verify_and_emit` (or other instructions).",
+        "",
+        "The `initialize_program_state` instruction:",
+        "- Creates a new ProgramState account owned by this program.",
+        "- Initializes `state` to `false`."
+      ],
+      "discriminator": [
+        114,
+        90,
+        170,
+        208,
+        223,
+        41,
+        40,
+        160
+      ],
+      "accounts": [
+        {
+          "name": "program_state",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "start_protocol",
+      "docs": [
+        "1) Start the protocol."
+      ],
+      "discriminator": [
+        62,
+        109,
+        17,
+        123,
+        132,
+        131,
+        244,
+        17
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "signer": true
+        },
+        {
+          "name": "program_state",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "message_request",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "ProgramState",
+      "discriminator": [
+        77,
+        209,
+        137,
+        229,
+        149,
+        67,
+        167,
+        230
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "AcknowledgeMessageCommittedB",
+      "discriminator": [
+        105,
+        97,
+        149,
+        189,
+        191,
+        86,
+        147,
+        226
+      ]
+    },
+    {
+      "name": "AcknowledgeMessageErrorB",
+      "discriminator": [
+        178,
+        25,
+        72,
+        27,
+        195,
+        219,
+        40,
+        217
+      ]
+    },
+    {
+      "name": "ProtocolFinishedB",
+      "discriminator": [
+        232,
+        243,
+        247,
+        191,
+        254,
+        217,
+        93,
+        210
+      ]
+    },
+    {
+      "name": "ProtocolFinishedErrorB",
+      "discriminator": [
+        172,
+        162,
+        31,
+        13,
+        130,
+        116,
+        245,
+        247
+      ]
+    },
+    {
+      "name": "ProtocolStartErrorB",
+      "discriminator": [
+        198,
+        26,
+        52,
+        134,
+        20,
+        91,
+        5,
+        67
+      ]
+    },
+    {
+      "name": "ProtocolStartedB",
+      "discriminator": [
+        190,
+        64,
+        33,
+        189,
+        185,
+        189,
+        199,
+        231
+      ]
+    },
+    {
+      "name": "TransferMessageCommittedB",
+      "discriminator": [
+        14,
+        115,
+        27,
+        146,
+        226,
+        197,
+        173,
+        158
+      ]
+    },
+    {
+      "name": "TransferMessageErrorB",
+      "discriminator": [
+        156,
+        215,
+        160,
+        157,
+        34,
+        22,
+        77,
+        113
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "ProtocolNotActive",
+      "msg": "Protocol is not currently active"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidSignature",
+      "msg": "Invalid signature"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidOperation",
+      "msg": "Invalid operation"
+    }
+  ],
+  "types": [
+    {
+      "name": "AcknowledgeMessageCommittedB",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "starter",
+            "type": "pubkey"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "message_content",
+            "type": "string"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AcknowledgeMessageErrorB",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "starter",
+            "type": "pubkey"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "message_content",
+            "type": "string"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProgramState",
+      "docs": [
+        "A program-owned account that stores our boolean state (and potentially more data)."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "state",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProtocolFinishedB",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "starter",
+            "type": "pubkey"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProtocolFinishedErrorB",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "starter",
+            "type": "pubkey"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProtocolStartErrorB",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "starter",
+            "type": "pubkey"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProtocolStartedB",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "starter",
+            "type": "pubkey"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TransferMessageCommittedB",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "starter",
+            "type": "pubkey"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "message_content",
+            "type": "string"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TransferMessageErrorB",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "starter",
+            "type": "pubkey"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "message_content",
+            "type": "string"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    }
+  ]
 }

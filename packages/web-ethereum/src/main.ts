@@ -1,7 +1,7 @@
 import { Metamask } from './metamask';
 import { EventCatcher } from './eventCatcher';
 
-import config from '@thesis/common/config';
+import config from '../data/config.json';
 
 export default class Main {
     //Connect to metamask
@@ -10,7 +10,7 @@ export default class Main {
             name: 'Bridge Dapp'
         },
         preferDesktop: true,
-        infuraAPIKey: config.infuraApiKey
+        infuraAPIKey: config.INFURA_API_KEY
     });
 
     public eventCatcher: EventCatcher = new EventCatcher();
@@ -22,11 +22,6 @@ export default class Main {
     public destinationInputField: HTMLInputElement = document.querySelector(
         '#destination-input-field'
     )!;
-
-    // Operation container for message.
-    public operationInputContainer: HTMLElement = document.querySelector('#operation-input')!;
-    public operationInputField: HTMLInputElement =
-        document.querySelector('#operation-input-field')!;
 
     // Input container for message.
     public messageInputContainer: HTMLElement = document.querySelector('#message-input')!;
@@ -44,14 +39,12 @@ export default class Main {
     //Shows the input fields
     private showInput() {
         this.destinationInputContainer.style.display = 'flex';
-        this.operationInputContainer.style.display = 'flex';
         this.messageInputContainer.style.display = 'flex';
     }
 
     //Hides the input fields
     private hideInput() {
         this.destinationInputContainer.style.display = 'none';
-        this.operationInputContainer.style.display = 'none';
         this.messageInputContainer.style.display = 'none';
     }
 
@@ -65,7 +58,9 @@ export default class Main {
 
         //Button that starts the information exchange protocol
         this.metamask.onConnected(() => {
-            this.connectButton.textContent = 'Start the information exchange protocol';
+            this.connectButton.textContent = 'Send the message';
+            this.eventCatcher.listenForAnyEvent();
+            this.metamask.startProtocol();
             this.textInfo.hidden = true;
             this.showInput();
             this.messageInputField.focus();
@@ -76,21 +71,20 @@ export default class Main {
     private async connect() {
         if (this.metamask.mainAccount) {
             this.eventCatcher.listenForAnyEvent();
+            //Makes all the functionality when you create the message and call getTransferInfo
             this.signFirstMessage();
-            //let signedMessage = this.operationInputField.value,
-            //    messageReq = this.messageInputField.value;
-            //this.metamask.getValuesSignatures(signedMessage, messageReq);
             console.log(`Connected to ${this.metamask.mainAccount}`);
+            //It would follow
         } else this.metamask.connect();
     }
 
     //Works to sign the first message
     private async signFirstMessage() {
-        let operationMessage = this.operationInputField.value,
-            userMesage = this.messageInputField.value,
+        let userMesage = this.messageInputField.value,
             destination = this.destinationInputField.value;
-        this.metamask.createSignedMessage(destination, operationMessage, userMesage);
+        this.metamask.createSignedMessage(destination, userMesage);
         this.hideInput();
+        this.connectButton.hidden = true;
     }
 }
 

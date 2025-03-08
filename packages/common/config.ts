@@ -1,5 +1,3 @@
-import fs from 'node:fs/promises';
-
 import dotenv from 'dotenv-extended';
 import dotenvParseVariables from 'dotenv-parse-variables';
 
@@ -19,6 +17,7 @@ export interface Config {
     // Smart contracts
     smartContractAEthereumAddress: string;
     smartContractBSolanaAddress: string;
+    smartContractBSolanaStateAddress: string;
 }
 
 console.debug(`Loading env values from [.env] with fallback to [.env.defaults]`);
@@ -31,21 +30,11 @@ function camelCase(str: string): string {
         );
 }
 
-let { NODE_ENV } = process.env,
-    env = dotenv.load({
+let env = dotenv.load({
         path: `../../.env`,
         defaults: '../../.env.defaults'
     }),
-    nodeEnvConfig = `../../.env.${NODE_ENV}`,
-    nodeEnvConfigExists = await fs.stat(nodeEnvConfig).catch(() => false);
-
-if (NODE_ENV && nodeEnvConfigExists) {
-    console.debug(`Loading additional env values from [.env.${NODE_ENV}]`);
-
-    Object.assign(env, dotenv.load({ path: nodeEnvConfig }));
-}
-
-let envConfig = dotenvParseVariables(env),
+    envConfig = dotenvParseVariables(env),
     config = {} as Config;
 
 for (let key in envConfig) {
