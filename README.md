@@ -11,10 +11,10 @@ Este repositorio contiene el código del prototipo desarrollado para verificar l
 
 6. Seguir los pasos para instalar solana y anchor para desplegar contratos inteligentes en Solana y una vez instalado copiar el código del contrato inteligente web-solana>anchor>ProtocolActionsSCB.rs, editarlo con las direcciones de las cuentas que se vayan a usar y desplegarlo en Solana. Se puede seguir este [tutorial para desplegar contratos inteligentes en Solana]([https://www.anchor-lang.com/docs/installation](https://dev.to/edge-and-node/the-complete-guide-to-full-stack-solana-development-with-react-anchor-rust-and-phantom-3291)). Una vez desplegado el nuevo contrato inteligente, reemplazar el valor del idl.json con el nuevo valor.
 
-7. Obtener API Keys
+7. Obtener API Keys de los terceros que se vayan a usar para la comunicación con Ethereum, se puede omitir el uso de terceros, pero se debe modificar el código correspondiente.
 
-8. Crear un archivo .env donde se incluyan los valores de las API keys, los contratos inteligentes y las cuentas, siguiendoselos el siguiente formato:
-# API KEYS
+8. Crear un archivo .env donde se incluyan los valores de las API keys, los contratos inteligentes y las cuentas, escribiendolos el siguiente formato:
+`# API KEYS
 INFURA_API_KEY=''
 ETHER_SCAN_API_KEY=''
 ALCHEMY_API_KEY=''
@@ -30,7 +30,7 @@ USER_B_SOLANA_ADDRESS=''
 SMART_CONTRACT_A_ETHEREUM_ADDRESS=''
 SMART_CONTRACT_B_SOLANA_ADDRESS=''
 SMART_CONTRACT_B_SOLANA_STATE_ADDRESS=''
-
+`
 # Ejecutar el programa
 
 1. Una vez cubiertos los prerequisitos ejecutar el comando `yarn install` y luego el comando `yarn vite`, después copiar los links de localhosts en dos pestañas de su navegador electo y seguir la lógica del protocolo.
