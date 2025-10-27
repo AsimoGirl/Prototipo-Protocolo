@@ -10,13 +10,13 @@ Video que muestra la ejecución del prototipo: [link youtube](https://youtu.be/P
    
 2. Se deben tener cuatro cuentas en total: dos en la testnet de Sepolia (una para A y otra para pcn) y dos en la devnet de Solana (una para B y otra para pcn). Tratar que todas las cuentas tengan al menos 3 ETH para Sepolia y 3 SOL para Solana.
    
-3. Copiar el código del contrato inteligente web-ethereum>smartContracts>ProtocolActionsSCA.sol, editarlo con las direcciones de las cuentas que se vayan a usar y desplegarlo usando Remix, puede seguir el siguente [tutorial para desplegar contratos inteligentes con Remix](https://remix-ide.readthedocs.io/en/latest/create_deploy.html). Una vez desplegado el nuevo contrato inteligente, reemplazar el valor del rotocolActionsABI.jso con el nuevo valor creado.
+3. Copiar el código del contrato inteligente web-ethereum>smartContracts>ProtocolActionsSCA.sol, editarlo con las direcciones de las cuentas que se vayan a usar y desplegarlo usando Remix, puede seguir el siguente [tutorial para desplegar contratos inteligentes con Remix](https://remix-ide.readthedocs.io/en/latest/create_deploy.html). Una vez desplegado el nuevo contrato inteligente, reemplazar el valor del ProtocolActionsABI.json con el nuevo valor creado.
 
-6. Seguir los pasos para instalar solana y anchor para desplegar contratos inteligentes en Solana y una vez instalado copiar el código del contrato inteligente web-solana>anchor>ProtocolActionsSCB.rs, editarlo con las direcciones de las cuentas que se vayan a usar y desplegarlo en Solana. Se puede seguir este [tutorial para desplegar contratos inteligentes en Solana]([https://www.anchor-lang.com/docs/installation](https://dev.to/edge-and-node/the-complete-guide-to-full-stack-solana-development-with-react-anchor-rust-and-phantom-3291)). Una vez desplegado el nuevo contrato inteligente, reemplazar el valor del idl.json con el nuevo valor.
+4. Seguir los pasos para instalar solana y anchor para desplegar contratos inteligentes en Solana y una vez instalado copiar el código del contrato inteligente web-solana>anchor>ProtocolActionsSCB.rs, editarlo con las direcciones de las cuentas que se vayan a usar y desplegarlo en Solana. Se puede seguir este [tutorial para desplegar contratos inteligentes en Solana]([https://www.anchor-lang.com/docs/installation](https://dev.to/edge-and-node/the-complete-guide-to-full-stack-solana-development-with-react-anchor-rust-and-phantom-3291)). Una vez desplegado el nuevo contrato inteligente, reemplazar el valor del idl.json con el nuevo valor.
 
-7. Obtener API Keys de los terceros que se vayan a usar para la comunicación con Ethereum, se puede omitir el uso de terceros, pero se debe modificar el código correspondiente.
+5. Obtener API Keys de los terceros que se vayan a usar para la comunicación con Ethereum, se puede omitir el uso de terceros, pero se debe modificar el código correspondiente.
 
-8. Crear un archivo .env donde se incluyan los valores de las API keys, los valores de las direcciones públicas de los contratos inteligentes y las direcciones públicas de las cuentas, escribiendolos el siguiente formato:
+6. Crear un archivo .env donde se incluyan los valores de las API keys, los valores de las direcciones públicas de los contratos inteligentes y las direcciones públicas de las cuentas, escribiendolos el siguiente formato:
 ```
 # API KEYS
 INFURA_API_KEY=''
