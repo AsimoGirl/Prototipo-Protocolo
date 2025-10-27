@@ -19,19 +19,19 @@ Video que muestra la ejecución del prototipo: [link youtube](https://youtu.be/P
 
 8. Crear un archivo .env donde se incluyan los valores de las API keys, los valores de las direcciones públicas de los contratos inteligentes y las direcciones públicas de las cuentas, escribiendolos el siguiente formato:
 ```
-API KEYS
+# API KEYS
 INFURA_API_KEY=''
 ETHER_SCAN_API_KEY=''
 ALCHEMY_API_KEY=''
 CHAINSTACK_API_KEY=''
 
-ADDRESSES
+# ADDRESSES
 USER_A_ETHEREUM_ADDRESS=''
 NETWORK_LEADER_ETHEREUM_ADDRESS=''
 NETWORK_LEADER_SOLANA_ADDRESS=''
 USER_B_SOLANA_ADDRESS=''
 
-SMART CONTRACTS
+# SMART CONTRACTS
 SMART_CONTRACT_A_ETHEREUM_ADDRESS=''
 SMART_CONTRACT_B_SOLANA_ADDRESS=''
 SMART_CONTRACT_B_SOLANA_STATE_ADDRESS=''
