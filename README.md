@@ -4,6 +4,7 @@ Este repositorio contiene el código del prototipo desarrollado para verificar l
 
 Link de la tesis que contiene la descripción del protocolo: [link tesiunam](http://132.248.9.195/ptd2025/ene_mar/0866365/Index.html)
 
+Video que muestra la ejecución del prototipo: [link youtube](https://youtu.be/PN6s4-7hts0)
 
 # Prerequisitos 
 1. El código requiere que se tengan descargadas las wallets [Metamask](https://metamask.io/download) y [Phantom](https://phantom.com/download) en el navegador en el que se va a ejecutar las web apps. Se recomienda usar Google Chrome.
